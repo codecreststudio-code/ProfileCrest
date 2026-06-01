@@ -520,7 +520,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. @yourtwitter or dushyantp5"
+            placeholder="e.g. @yourhandle or Jane Doe"
             className="form-input"
             maxLength={50}
           />
