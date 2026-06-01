@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 interface Supporter {
   name: string;
@@ -67,10 +68,44 @@ const VALID_CURRENCIES = ["USD", "INR", "EUR", "GBP", "CAD", "AUD"];
 
 const getDbPath = () => path.join(process.cwd(), "data", "supporters.json");
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey) 
+  : null;
+
 let supportersCache: Supporter[] | null = null;
 
 // Ensure database file exists and load it
 async function getSupporters(): Promise<Supporter[]> {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("supporters")
+        .select("*")
+        .order("timestamp", { ascending: false });
+      
+      if (!error && data) {
+        // Map database snake_case fields to interface camelCase fields
+        const mappedList = data.map((sup: any) => ({
+          name: sup.name,
+          coffees: sup.coffees,
+          message: sup.message,
+          currency: sup.currency,
+          amount: sup.amount,
+          timestamp: sup.timestamp,
+          paymentId: sup.payment_id || undefined,
+        }));
+        supportersCache = mappedList;
+        return supportersCache;
+      }
+      console.warn("Supabase select failed, falling back to local files:", error);
+    } catch (err) {
+      console.warn("Failed to query Supabase database (falling back to files):", err);
+    }
+  }
+
   if (supportersCache) {
     return supportersCache;
   }
@@ -181,6 +216,29 @@ export async function POST(req: Request) {
       timestamp: new Date().toISOString(),
       paymentId: sanitizedPaymentId,
     };
+
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from("supporters")
+          .insert([{
+            name: newSupporter.name,
+            coffees: newSupporter.coffees,
+            message: newSupporter.message,
+            currency: newSupporter.currency,
+            amount: newSupporter.amount,
+            timestamp: newSupporter.timestamp,
+            payment_id: newSupporter.paymentId || null,
+          }]);
+        if (error) {
+          console.warn("Supabase insert failed, falling back to local files:", error);
+        } else {
+          console.log("Successfully persisted supporter in Supabase!");
+        }
+      } catch (err) {
+        console.warn("Failed to insert into Supabase database (falling back to files):", err);
+      }
+    }
 
     const updated = [newSupporter, ...currentSupporters];
     const saved = await saveSupporters(updated);
