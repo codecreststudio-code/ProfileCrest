@@ -132,7 +132,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     md += `    <td width="45%" valign="top" align="center">\n`;
     md += `      <h3>📊 Contributions & stats</h3>\n`;
     if (f.username && f.stats.showStats) {
-      md += `      <img src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true" alt="GitHub Stats" width="100%" />\n`;
+      md += `      <img src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" width="100%" />\n`;
     } else {
       md += `      Stats card disabled or username missing\n`;
     }
@@ -160,7 +160,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
         md += `        <a href="https://github.com/ryo-ma/github-profile-trophy"><img src="https://github-profile-trophy.vercel.app/?username=${f.username}&theme=${trophyTheme}" alt="Trophies" /></a><br/><br/>\n`;
       }
       if (f.stats.showStreak) {
-        md += `        <img src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false" alt="Streak Stats" />\n`;
+        md += `        <img src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" />\n`;
       }
       md += `      </p>\n`;
       md += `    </td>\n`;
@@ -263,10 +263,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     if (f.username && (f.stats.showStats || f.stats.showStreak || f.stats.showTrophies)) {
       md += `## 📈 GitHub Metrics\n<p align="left">\n`;
       if (f.stats.showStats) {
-        md += `  <img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true" alt="GitHub Stats" /><br/><br/>\n`;
+        md += `  <img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/><br/>\n`;
       }
       if (f.stats.showStreak) {
-        md += `  <img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false" alt="Streak Stats" /><br/><br/>\n`;
+        md += `  <img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" /><br/><br/>\n`;
       }
       md += `</p>\n`;
     }
@@ -334,13 +334,13 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
   if (f.username && (f.stats.showStats || f.stats.showTopLanguages || f.stats.showStreak)) {
     md += `\n<h3 align="left">GitHub Stats:</h3>\n<p align="left">\n`;
     if (f.stats.showStats) {
-      md += `<img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true" alt="GitHub Stats" /><br/>\n`;
+      md += `<img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/>\n`;
     }
     if (f.stats.showTopLanguages) {
-      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&layout=compact" alt="Top Languages" /><br/>\n`;
+      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&layout=compact&cache_seconds=86400" alt="Top Languages" /><br/>\n`;
     }
     if (f.stats.showStreak) {
-      md += `<img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false" alt="GitHub Streak" /><br/>\n`;
+      md += `<img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false&cache_seconds=86400" alt="GitHub Streak" /><br/>\n`;
     }
     md += `</p>\n`;
   }
