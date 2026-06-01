@@ -23,6 +23,21 @@ function buildAbout(f: FormState): string {
   return aboutItems.join("\n");
 }
 
+function buildAboutHtml(f: FormState): string {
+  const aboutItems: string[] = [];
+  if (f.currentlyWorkingOn) aboutItems.push(`• 🔭 I'm currently working on <b>${f.currentlyWorkingOn}</b>`);
+  if (f.currentlyLearning) aboutItems.push(`• 🌱 I'm currently learning <b>${f.currentlyLearning}</b>`);
+  if (f.collaborateOn) aboutItems.push(`• 👯 I'm looking to collaborate on <b>${f.collaborateOn}</b>`);
+  if (f.helpWith) aboutItems.push(`• 🤝 I'm looking for help with <b>${f.helpWith}</b>`);
+  if (f.askMeAbout) aboutItems.push(`• 💬 Ask me about <b>${f.askMeAbout}</b>`);
+  if (f.reachMeAt) aboutItems.push(`• 📫 How to reach me <b>${f.reachMeAt}</b>`);
+  if (f.portfolioUrl) aboutItems.push(`• 👨‍💻 All of my projects are available at <a href="${f.portfolioUrl}" target="_blank">${f.portfolioUrl}</a>`);
+  if (f.funFact) aboutItems.push(`• ⚡ Fun fact <b>${f.funFact}</b>`);
+  if (f.pronouns) aboutItems.push(`• 😄 Pronouns: <b>${f.pronouns}</b>`);
+
+  return aboutItems.join("<br/>\n");
+}
+
 function buildSocialBadges(f: FormState, usePresetColor: boolean, presetBadgeColor: string | null): string {
   const socialBadges = socialLinks.flatMap((s) => {
     const handle = f.socials[s.id as keyof typeof f.socials];
@@ -111,8 +126,8 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     md += `  <tr>\n`;
     md += `    <td width="55%" valign="top">\n`;
     md += `      <h3>🔭 Profile summary</h3>\n`;
-    const summary = buildAbout(f);
-    md += summary ? summary.replace(/\n/g, "<br/>\n") : "I am a passionate software developer.";
+    const summary = buildAboutHtml(f);
+    md += summary || "I am a passionate software developer.";
     md += `\n    </td>\n`;
     md += `    <td width="45%" valign="top" align="center">\n`;
     md += `      <h3>📊 Contributions & stats</h3>\n`;
@@ -182,7 +197,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += `    </td>\n`;
       md += `  </tr>\n`;
     }
-    md += `</table>\n`;
+    md += `</table>\n\n`;
 
     // Activity graph
     if (f.stats.showActivityGraph && f.username) {

@@ -54,7 +54,13 @@ function GeneratePageContent() {
   const [previewMode, setPreviewMode] = useState<"rendered" | "raw">("rendered");
   const [copied, setCopied] = useState(false);
 
-  const origin = "https://profilecrest.vercel.app";
+  const [origin, setOrigin] = useState("https://profilecrest.vercel.app");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   // Pre-fill username from URL (with proper dependency tracking)
   useEffect(() => {
@@ -275,12 +281,10 @@ function MarkdownPreviewPanel({
                   li: ({ children }) => <li style={{ marginBottom: 6, color: "#e6edf3" }}>{children}</li>,
                   a: ({ children, href }) => <a href={href} style={{ color: "#58a6ff" }} target="_blank" rel="noopener noreferrer">{children}</a>,
                   img: ({ src, alt }) => (
-                    <Image
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       src={String(src || "")}
                       alt={String(alt || "")}
-                      width={150}
-                      height={40}
-                      unoptimized
                       style={{ maxWidth: "100%", height: "auto", borderRadius: 4, marginRight: 4, marginBottom: 4, display: "inline-block" }}
                     />
                   ),
