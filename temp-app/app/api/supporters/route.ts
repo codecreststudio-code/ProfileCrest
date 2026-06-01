@@ -1,0 +1,174 @@
+import { NextResponse } from "next/server";
+import { promises as fs } from "fs";
+import path from "path";
+
+interface Supporter {
+  name: string;
+  coffees: number;
+  message: string;
+  currency: string;
+  amount: number;
+  timestamp: string;
+}
+
+const DEFAULT_SUPPORTERS: Supporter[] = [
+  {
+    name: "dushyantp5",
+    coffees: 5,
+    message: "Amazing tool! Saved me so much time styling my README.",
+    currency: "INR",
+    amount: 2500,
+    timestamp: "2026-05-30T10:20:00Z",
+  },
+  {
+    name: "OneQuy Apps",
+    coffees: 1,
+    message: "Thanks 💛",
+    currency: "USD",
+    amount: 5,
+    timestamp: "2026-05-29T14:45:00Z",
+  },
+  {
+    name: "kunalstwt",
+    coffees: 3,
+    message: "Good to see you making amazing products mate.",
+    currency: "INR",
+    amount: 1500,
+    timestamp: "2026-05-28T08:15:00Z",
+  },
+  {
+    name: "rpg.alex",
+    coffees: 1,
+    message: "Absolutely love the Bento grid layout options!",
+    currency: "USD",
+    amount: 5,
+    timestamp: "2026-05-27T19:30:00Z",
+  },
+  {
+    name: "Fred",
+    coffees: 1,
+    message: "Keep up the awesome work!",
+    currency: "EUR",
+    amount: 5,
+    timestamp: "2026-05-26T11:00:00Z",
+  },
+];
+
+const VALID_CURRENCIES = ["USD", "INR", "EUR", "GBP", "CAD", "AUD"];
+
+const getDbPath = () => path.join(process.cwd(), "data", "supporters.json");
+
+// Ensure database file exists and load it
+async function getSupporters(): Promise<Supporter[]> {
+  const dbPath = getDbPath();
+  try {
+    const data = await fs.readFile(dbPath, "utf-8");
+    return JSON.parse(data);
+  } catch (error: any) {
+    // If file doesn't exist, create it with default seed data
+    if (error.code === "ENOENT") {
+      try {
+        // Ensure data directory exists
+        await fs.mkdir(path.dirname(dbPath), { recursive: true });
+        await fs.writeFile(dbPath, JSON.stringify(DEFAULT_SUPPORTERS, null, 2), "utf-8");
+        return DEFAULT_SUPPORTERS;
+      } catch (writeErr) {
+        console.error("Failed to initialize supporters database file:", writeErr);
+        return DEFAULT_SUPPORTERS;
+      }
+    }
+    console.error("Failed to read supporters database:", error);
+    return DEFAULT_SUPPORTERS;
+  }
+}
+
+// Write to supporters database cleanly
+async function saveSupporters(supporters: Supporter[]): Promise<boolean> {
+  const dbPath = getDbPath();
+  try {
+    await fs.writeFile(dbPath, JSON.stringify(supporters, null, 2), "utf-8");
+    return true;
+  } catch (error) {
+    console.error("Failed to write to supporters database:", error);
+    return false;
+  }
+}
+
+// Simple dynamic sanitation helper (SSRF/XSS protection)
+function sanitizeString(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;");
+}
+
+export async function GET() {
+  const list = await getSupporters();
+  return NextResponse.json(list, {
+    headers: {
+      "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+      "Pragma": "no-cache",
+    },
+  });
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { name, coffees, message, currency, amount } = body;
+
+    // Server-side validation guards
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return NextResponse.json({ error: "Supporter name is required." }, { status: 400 });
+    }
+    if (name.trim().length > 50) {
+      return NextResponse.json({ error: "Name must be 50 characters or less." }, { status: 400 });
+    }
+
+    const coffeeCount = parseInt(String(coffees));
+    if (isNaN(coffeeCount) || coffeeCount <= 0 || coffeeCount > 100) {
+      return NextResponse.json({ error: "Coffees must be a positive integer between 1 and 100." }, { status: 400 });
+    }
+
+    if (message && (typeof message !== "string" || message.trim().length > 250)) {
+      return NextResponse.json({ error: "Message must be 250 characters or less." }, { status: 400 });
+    }
+
+    if (!currency || !VALID_CURRENCIES.includes(currency)) {
+      return NextResponse.json({ error: "Invalid currency selected." }, { status: 400 });
+    }
+
+    const amountValue = parseFloat(String(amount));
+    if (isNaN(amountValue) || amountValue <= 0) {
+      return NextResponse.json({ error: "Amount must be a positive number." }, { status: 400 });
+    }
+
+    const currentSupporters = await getSupporters();
+
+    // Sanitize strings to prevent dynamic script injection
+    const newSupporter: Supporter = {
+      name: sanitizeString(name.trim()),
+      coffees: coffeeCount,
+      message: sanitizeString((message || "Bought a coffee to support open source!").trim()),
+      currency: currency,
+      amount: amountValue,
+      timestamp: new Date().toISOString(),
+    };
+
+    const updated = [newSupporter, ...currentSupporters];
+    const saved = await saveSupporters(updated);
+
+    if (!saved) {
+      return NextResponse.json({ error: "Failed to persist transaction to backend database." }, { status: 500 });
+    }
+
+    return NextResponse.json(updated);
+  } catch (err: any) {
+    console.error("Supporters POST Error:", err);
+    return NextResponse.json({ error: "Failed to parse request payload: " + err.message }, { status: 400 });
+  }
+}
