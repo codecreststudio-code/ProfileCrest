@@ -9,6 +9,7 @@ interface Supporter {
   currency: string;
   amount: number;
   timestamp: string;
+  paymentId?: string;
 }
 
 const DEFAULT_SUPPORTERS: Supporter[] = [
@@ -127,7 +128,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, coffees, message, currency, amount } = body;
+    const { name, coffees, message, currency, amount, paymentId } = body;
 
     // Server-side validation guards
     if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -157,6 +158,8 @@ export async function POST(req: Request) {
 
     const currentSupporters = await getSupporters();
 
+    const sanitizedPaymentId = paymentId ? sanitizeString(String(paymentId).trim()) : undefined;
+
     // Sanitize strings to prevent dynamic script injection
     const newSupporter: Supporter = {
       name: sanitizeString(name.trim()),
@@ -165,6 +168,7 @@ export async function POST(req: Request) {
       currency: currency,
       amount: amountValue,
       timestamp: new Date().toISOString(),
+      paymentId: sanitizedPaymentId,
     };
 
     const updated = [newSupporter, ...currentSupporters];

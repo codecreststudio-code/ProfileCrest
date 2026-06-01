@@ -14,6 +14,7 @@ interface Supporter {
   currency: string;
   amount: number;
   timestamp: string;
+  paymentId?: string;
 }
 
 const CURRENCIES = [
@@ -343,7 +344,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
       return;
     }
 
-    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_CodeCrestKey";
+    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_live_Stre2LlpvIa35v";
 
     const options = {
       key: razorpayKey,
@@ -352,13 +353,14 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
       name: "CodeCrest Studio",
       description: `Bought ${finalCoffeeCount} Coffee${finalCoffeeCount > 1 ? "s" : ""} to support CodeCrest Studio`,
       image: "/Logo01.webp",
-      handler: function () {
+      handler: function (response: any) {
         const newSup = {
           name: name.trim() || "Anonymous Supporter",
           coffees: finalCoffeeCount,
           message: message.trim() || "Bought a coffee to support open source!",
           currency: currency,
           amount: totalAmount,
+          paymentId: response?.razorpay_payment_id || "simulated",
         };
         submitSupporter(newSup).then((success) => {
           if (success) {
@@ -380,7 +382,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
       modal: {
         ondismiss: function () {
           // Simulation/Fallback support for development testing
-          if (razorpayKey === "rzp_test_CodeCrestKey") {
+          if (razorpayKey === "rzp_test_CodeCrestKey" || razorpayKey.startsWith("rzp_test_")) {
             const confirmTest = window.confirm(
               "Would you like to simulate a SUCCESSFUL sandbox payment transaction to test dynamic state updates?"
             );
@@ -391,6 +393,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
                 message: message.trim() || "Bought a coffee to support open source!",
                 currency: currency,
                 amount: totalAmount,
+                paymentId: "simulated_test_" + Math.random().toString(36).substr(2, 9),
               };
               submitSupporter(newSup).then((success) => {
                 if (success) {
