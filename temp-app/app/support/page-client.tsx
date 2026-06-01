@@ -344,7 +344,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
       return;
     }
 
-    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_live_Stre2LlpvIa35v";
+    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_CodeCrestKey";
 
     const options = {
       key: razorpayKey,
