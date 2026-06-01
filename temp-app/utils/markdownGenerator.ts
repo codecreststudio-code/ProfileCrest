@@ -95,7 +95,7 @@ function buildShowcaseContent(f: FormState): string {
   return md;
 }
 
-export function generateMarkdown(f: FormState, baseUrl: string = "https://profilecrest.vercel.app"): string {
+export function generateMarkdown(f: FormState, baseUrl: string = "https://profile-crest.vercel.app"): string {
   // 1. Resolve Theme Presets values
   const activePreset = themePresets.find((p) => p.id === f.themePreset) || themePresets[0];
   const usePresetColor = f.themePreset !== "default";

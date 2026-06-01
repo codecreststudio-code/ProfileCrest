@@ -54,7 +54,7 @@ function GeneratePageContent() {
   const [previewMode, setPreviewMode] = useState<"rendered" | "raw">("rendered");
   const [copied, setCopied] = useState(false);
 
-  const [origin, setOrigin] = useState("https://profilecrest.vercel.app");
+  const [origin, setOrigin] = useState("https://profile-crest.vercel.app");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -74,7 +74,7 @@ function GeneratePageContent() {
 
   const handleCopy = useCallback(async () => {
     try {
-      const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://profilecrest.vercel.app";
+      const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://profile-crest.vercel.app";
       const finalMarkdown = generateMarkdown(store, currentOrigin);
       await navigator.clipboard.writeText(finalMarkdown);
       setCopied(true);
@@ -86,7 +86,7 @@ function GeneratePageContent() {
   }, [store]);
 
   const handleDownload = useCallback(() => {
-    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://profilecrest.vercel.app";
+    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://profile-crest.vercel.app";
     const finalMarkdown = generateMarkdown(store, currentOrigin);
     const blob = new Blob([finalMarkdown], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);

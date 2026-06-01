@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Design an exceptional, custom GitHub Profile README with interactive Bento grids, 300+ animated tech badges, dynamic real-time stats cards, and modern custom widgets. 100% free and SEO-optimized by CodeCrest Studio!",
   alternates: {
-    canonical: "https://profilecrest.vercel.app",
+    canonical: "https://profile-crest.vercel.app",
   },
 };
 

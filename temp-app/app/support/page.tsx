@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Support CodeCrest Studio's open-source developer tools like ProfileCrest. Buy us a coffee using Razorpay in USD, INR, EUR, or GBP to keep our platforms 100% free and active!",
   alternates: {
-    canonical: "https://profilecrest.vercel.app/support",
+    canonical: "https://profile-crest.vercel.app/support",
   },
 };
 

@@ -3,7 +3,7 @@ import "./globals.css";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://profilecrest.vercel.app"),
+  metadataBase: new URL("https://profile-crest.vercel.app"),
   title: "ProfileCrest – Premium GitHub Profile README Generator",
   description:
     "Design an exceptional, custom GitHub Profile README with interactive Bento grids, 300+ animated tech badges, dynamic real-time stats cards, and modern custom widgets. 100% free and SEO-optimized by CodeCrest Studio!",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   publisher: "CodeCrest Studio",
   robots: "index, follow",
   alternates: {
-    canonical: "https://profilecrest.vercel.app",
+    canonical: "https://profile-crest.vercel.app",
   },
   icons: {
     icon: "/favicon.webp",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ProfileCrest – Premium GitHub Profile README Generator",
     description: "Design an exceptional, custom GitHub Profile README with interactive Bento grids, 300+ animated tech badges, dynamic real-time stats cards, and modern custom widgets.",
-    url: "https://profilecrest.vercel.app",
+    url: "https://profile-crest.vercel.app",
     siteName: "ProfileCrest",
     type: "website",
     images: [
