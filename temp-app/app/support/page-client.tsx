@@ -171,7 +171,7 @@ export default function SupportPageClient() {
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
           <div style={{ textAlign: "center" }}>
             <div style={{ marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Image src="/Logo01.webp" alt="ProfileCrest Logo" width={24} height={24} style={{ height: 24, width: "auto" }} />
+              <Image src="/Logo01.webp" alt="ProfileCrest Logo" width={110} height={34} style={{ height: 34, width: "auto", objectFit: "contain" }} />
             </div>
             <p style={{ color: "var(--text-muted)", fontSize: 14 }}>
               Premium GitHub Profile README Creator Suite by CodeCrest Studio
