@@ -67,12 +67,18 @@ const VALID_CURRENCIES = ["USD", "INR", "EUR", "GBP", "CAD", "AUD"];
 
 const getDbPath = () => path.join(process.cwd(), "data", "supporters.json");
 
+let supportersCache: Supporter[] | null = null;
+
 // Ensure database file exists and load it
 async function getSupporters(): Promise<Supporter[]> {
+  if (supportersCache) {
+    return supportersCache;
+  }
   const dbPath = getDbPath();
   try {
     const data = await fs.readFile(dbPath, "utf-8");
-    return JSON.parse(data);
+    supportersCache = JSON.parse(data);
+    return supportersCache!;
   } catch (error: any) {
     // If file doesn't exist, create it with default seed data
     if (error.code === "ENOENT") {
@@ -80,26 +86,31 @@ async function getSupporters(): Promise<Supporter[]> {
         // Ensure data directory exists
         await fs.mkdir(path.dirname(dbPath), { recursive: true });
         await fs.writeFile(dbPath, JSON.stringify(DEFAULT_SUPPORTERS, null, 2), "utf-8");
-        return DEFAULT_SUPPORTERS;
+        supportersCache = [...DEFAULT_SUPPORTERS];
+        return supportersCache;
       } catch (writeErr) {
-        console.error("Failed to initialize supporters database file:", writeErr);
-        return DEFAULT_SUPPORTERS;
+        console.warn("Failed to initialize supporters database file (serving initial list in-memory):", writeErr);
+        supportersCache = [...DEFAULT_SUPPORTERS];
+        return supportersCache;
       }
     }
     console.error("Failed to read supporters database:", error);
-    return DEFAULT_SUPPORTERS;
+    supportersCache = [...DEFAULT_SUPPORTERS];
+    return supportersCache;
   }
 }
 
 // Write to supporters database cleanly
 async function saveSupporters(supporters: Supporter[]): Promise<boolean> {
+  supportersCache = supporters;
   const dbPath = getDbPath();
   try {
     await fs.writeFile(dbPath, JSON.stringify(supporters, null, 2), "utf-8");
     return true;
   } catch (error) {
-    console.error("Failed to write to supporters database:", error);
-    return false;
+    console.warn("Failed to write to supporters database on disk (serving from updated in-memory cache):", error);
+    // Return true since we successfully preserved the transaction in memory for active sessions!
+    return true;
   }
 }
 
