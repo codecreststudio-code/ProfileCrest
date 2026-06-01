@@ -96,22 +96,54 @@ export async function GET() {
       },
     });
   } catch (err) {
-    console.error("Meme API Fetch failed, loading beautiful fallback:", err);
-    try {
-      const fallbackUrl = FALLBACK_MEMES[Math.floor(Math.random() * FALLBACK_MEMES.length)];
-      const imgRes = await fetch(fallbackUrl, { cache: "no-store" });
-      const contentType = imgRes.headers.get("content-type") || "image/gif";
-      const arrayBuffer = await imgRes.arrayBuffer();
+    console.error("Meme API Fetch failed, serving dynamic local SVG joke fallback:", err);
 
-      return new Response(arrayBuffer, {
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0",
-        },
-      });
-    } catch (fallbackErr) {
-      // Return a plain generic error in JSON format if both external sources are unreachable
-      return NextResponse.json({ error: "Meme service offline" }, { status: 502 });
-    }
+    const DEVELOPER_JOKES = [
+      { q: "Why do programmers wear glasses?", a: "Because they can't C#!" },
+      { q: "A SQL query walks into a bar, walks up to two tables and asks...", a: "\"Can I join you?\"" },
+      { q: "What is a programmer's favorite hangout place?", a: "Foo Bar" },
+      { q: "How many programmers does it take to change a light bulb?", a: "None. It's a hardware problem!" },
+      { q: "Why did the programmer quit their job?", a: "Because they didn't get arrays!" },
+      { q: "['hip', 'hip']", a: "(hip hip array!)" }
+    ];
+
+    const joke = DEVELOPER_JOKES[Math.floor(Math.random() * DEVELOPER_JOKES.length)];
+
+    const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" viewBox="0 0 600 200">
+      <defs>
+        <linearGradient id="joke-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#cc785c" />
+          <stop offset="100%" stop-color="#e8a55a" />
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" rx="12" fill="#faf9f5" stroke="#e6dfd8" stroke-width="1.5"/>
+      <g>
+        <!-- Branding header -->
+        <text x="30" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="url(#joke-grad)" letter-spacing="1.5px">😄 DAILY DEV JOKE</text>
+        
+        <!-- Big quote decoration -->
+        <text x="570" y="50" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#cc785c" opacity="0.2" text-anchor="end">”</text>
+
+        <!-- Question -->
+        <text x="40" y="86" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700" fill="#141413">${joke.q}</text>
+        
+        <!-- Answer -->
+        <text x="40" y="132" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="700" fill="#cc785c">${joke.a}</text>
+        
+        <!-- Branding tagline -->
+        <text x="570" y="175" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="8" font-weight="600" fill="#8b949e" letter-spacing="0.5px" text-anchor="end">PROFILECREST GENERATOR</text>
+      </g>
+    </svg>
+    `;
+
+    return new Response(svg, {
+      headers: {
+        "Content-Type": "image/svg+xml",
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      },
+    });
   }
 }

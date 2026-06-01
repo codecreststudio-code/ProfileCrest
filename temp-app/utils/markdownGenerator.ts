@@ -201,7 +201,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
 
     // Activity graph
     if (f.stats.showActivityGraph && f.username) {
-      md += `\n<h3 align="left">📈 Weekly Contribution Graph:</h3>\n`;
+      md += `\n### 📈 Weekly Contribution Graph\n\n`;
       md += `[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&theme=${activePreset.statsTheme === "tokyonight" ? "tokyo-night" : activePreset.statsTheme === "dracula" ? "dracula" : "github-compact"})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
     }
 
@@ -210,7 +210,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += `\n<p align="center"><img src="${baseUrl}/api/quote" alt="Quote" /></p>\n`;
     }
     if (f.fun.showMeme) {
-      md += `\n<h3 align="left">😄 Random Dev Meme:</h3>\n<img src="${baseUrl}/api/meme" style="height: 400px;" alt="Random meme"/>\n`;
+      md += `\n### 😄 Random Dev Meme\n\n<img src="${baseUrl}/api/meme" style="height: 400px;" alt="Random meme"/>\n`;
     }
 
     return md.trim();
