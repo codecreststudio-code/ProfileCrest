@@ -56,3 +56,18 @@ export const statsThemes = [
   "github_dark", "github_dark_dimmed", "discord_old_blurple",
   "aura_dark", "panda", "cobalt2", "swift", "default",
 ];
+
+export const activityGraphThemes = [
+  "default",
+  "react",
+  "react-dark",
+  "github",
+  "github-compact",
+  "xcode",
+  "rogue",
+  "merko",
+  "vue",
+  "tokyo-night",
+  "high-contrast",
+  "dracula",
+];

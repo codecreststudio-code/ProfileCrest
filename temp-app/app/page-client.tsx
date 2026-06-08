@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaInstagram, FaYoutube } from "react-icons/fa6";
-import { LuGlobe, LuMail, LuShield, LuZap, LuTrendingUp, LuCode, LuEye, LuCoffee, LuTrophy, LuSmile, LuGithub, LuUsers } from "react-icons/lu";
+import { LuGlobe, LuMail, LuZap, LuTrendingUp, LuCode, LuCoffee, LuTrophy, LuSmile, LuUsers } from "react-icons/lu";
 import Link from "next/link";
 import Image from "next/image";
 import HeroSvg from "../components/HeroSvg";

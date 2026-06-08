@@ -309,7 +309,6 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
 
   const { currency, coffeeCount, isCustomCount, customValue, name, message } = formState;
 
-  const setCurrency = (val: string) => setFormState(prev => ({ ...prev, currency: val }));
   const setCoffeeCount = (val: number) => setFormState(prev => ({ ...prev, coffeeCount: val }));
   const setIsCustomCount = (val: boolean) => setFormState(prev => ({ ...prev, isCustomCount: val }));
   const setCustomValue = (val: string) => setFormState(prev => ({ ...prev, customValue: val }));
@@ -339,7 +338,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
       }
     }
 
-    if (!scriptLoaded && !(window as any).Razorpay) {
+    if (!scriptLoaded && !("Razorpay" in window)) {
       toast.error("Razorpay payment checkout library is still loading. Please try again in a moment!");
       return;
     }
@@ -353,7 +352,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
       name: "CodeCrest Studio",
       description: `Bought ${finalCoffeeCount} Coffee${finalCoffeeCount > 1 ? "s" : ""} to support CodeCrest Studio`,
       image: "/Logo01.webp",
-      handler: function (response: any) {
+      handler: function (response: { razorpay_payment_id?: string }) {
         const newSup = {
           name: name.trim() || "Anonymous Supporter",
           coffees: finalCoffeeCount,
@@ -410,7 +409,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
     };
 
     try {
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new (window as unknown as { Razorpay: new (opts: unknown) => { open: () => void } }).Razorpay(options);
       rzp.open();
     } catch (err) {
       console.error("Failed to open Razorpay:", err);

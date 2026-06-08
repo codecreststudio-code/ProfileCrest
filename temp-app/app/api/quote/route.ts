@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 // Curated list of 30+ inspiring, smart, and funny developer quotes
 const DEVELOPER_QUOTES = [
   { text: "First, solve the problem. Then, write the code.", author: "John Johnson" },
@@ -31,7 +29,7 @@ const DEVELOPER_QUOTES = [
   { text: "Design is not just what it looks like and feels like. Design is how it works.", author: "Steve Jobs" },
   { text: "The function of good software is to make the complex appear simple.", author: "Grady Booch" },
   { text: "Quality is not an act, it is a habit.", author: "Aristotle" },
-  { text: "Clean code always looks like it was written by someone who cares.", author: "Michael Feathers" }
+  { text: "Clean code always looks like it was written by someone who cares.", author: "Michael Feathers" },
 ];
 
 function wrapText(text: string, maxChars: number): string[] {
@@ -53,14 +51,25 @@ function wrapText(text: string, maxChars: number): string[] {
 export async function GET() {
   const quote = DEVELOPER_QUOTES[Math.floor(Math.random() * DEVELOPER_QUOTES.length)];
   const lines = wrapText(`"${quote.text}"`, 62);
-  const startY = lines.length === 1 ? 74 : lines.length === 2 ? 64 : 54;
+
+  // Bug #6 fix: SVG height was fixed at 150px causing text to clip for long quotes (4+ lines).
+  // Dynamically calculate height based on number of wrapped lines (min 150, 24px per extra line).
+  const lineHeight = 22;
+  const baseHeight = 150;
+  const contentLines = lines.length;
+  // Base layout uses ~3 lines. For each extra line beyond 3 add 24px to height.
+  const extraLines = Math.max(0, contentLines - 3);
+  const svgHeight = baseHeight + extraLines * lineHeight;
+
+  // startY positions the text block vertically centered within the content area
+  const startY = Math.round(svgHeight * 0.45 - ((contentLines - 1) * lineHeight) / 2);
 
   const tspanElements = lines
-    .map((line, idx) => `<tspan x="55" dy="${idx === 0 ? 0 : 22}">${line}</tspan>`)
+    .map((line, idx) => `<tspan x="55" dy="${idx === 0 ? 0 : lineHeight}">${line}</tspan>`)
     .join("");
 
   const svg = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="600" height="150" viewBox="0 0 600 150">
+  <svg xmlns="http://www.w3.org/2000/svg" width="600" height="${svgHeight}" viewBox="0 0 600 ${svgHeight}">
     <defs>
       <linearGradient id="crest-grad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#cc785c" />
@@ -73,7 +82,7 @@ export async function GET() {
       <text x="570" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="url(#crest-grad)" letter-spacing="1px" text-anchor="end">PROFILECREST</text>
       
       <!-- Big Decorative Quote Mark -->
-      <text x="30" y="52" font-family="Georgia, serif" font-size="32" font-weight="700" fill="#cc785c" opacity="0.35">“</text>
+      <text x="30" y="52" font-family="Georgia, serif" font-size="32" font-weight="700" fill="#cc785c" opacity="0.35">&#8220;</text>
       
       <!-- Multi-line SVG-compatible text representation -->
       <text x="55" y="${startY}" font-family="Georgia, 'Times New Roman', serif" font-size="15" fill="#141413" font-style="italic">
@@ -81,7 +90,7 @@ export async function GET() {
       </text>
       
       <!-- Styled Author attribution -->
-      <text x="570" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#cc785c" text-anchor="end">— ${quote.author}</text>
+      <text x="570" y="${svgHeight - 25}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#cc785c" text-anchor="end">— ${quote.author}</text>
     </g>
   </svg>
   `;

@@ -1,9 +1,9 @@
 "use client";
 
-import { LazyMotion, domAnimation, m } from "framer-motion";
+import { LazyMotion, domAnimation, m, Variants } from "framer-motion";
 
 // Custom animation variants for structural elements (drawing outline + fade-in fill)
-const drawVariants: any = {
+const drawVariants: Variants = {
   hidden: {
     pathLength: 0,
     fillOpacity: 0,
@@ -22,7 +22,7 @@ const drawVariants: any = {
 };
 
 // Custom animation variants for organic/small shapes (purely fade-in to prevent outline boundary artifacts)
-const fadeVariants: any = {
+const fadeVariants: Variants = {
   hidden: {
     opacity: 0,
   },

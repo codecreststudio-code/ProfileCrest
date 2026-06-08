@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     canonical: "https://profile-crest.vercel.app",
   },
   icons: {
-    icon: "/favicon.webp",
+    icon: "/favicon.ico",
   },
   openGraph: {
     title: "ProfileCrest – Premium GitHub Profile README Generator",

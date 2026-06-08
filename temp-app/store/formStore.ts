@@ -107,7 +107,7 @@ export interface FormState {
   fun: Fun;
 }
 
-interface FormActions {
+export interface FormActions {
   setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects">, value: string) => void;
   setSocial: (key: keyof Socials, value: string) => void;
   addCustomSocial: (name: string, url: string, color: string) => void;

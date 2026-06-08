@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 // Curated list of reliable, high-quality, and clean programming meme image links as fallbacks
 const FALLBACK_MEMES = [
   "https://media.giphy.com/media/26n6WywJyhXmXJv3y/giphy.gif",
@@ -44,14 +42,14 @@ export async function GET() {
     // --- SSRF Prevention Guard ---
     try {
       const parsedUrl = new URL(memeImageUrl);
-      
+
       // Ensure only HTTP/HTTPS protocols are allowed
       if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
         throw new Error("Invalid protocol in meme URL");
       }
 
       const hostname = parsedUrl.hostname.toLowerCase();
-      
+
       if (
         LOCAL_HOSTS.includes(hostname) ||
         hostname.endsWith(".local") ||
@@ -65,8 +63,9 @@ export async function GET() {
       ) {
         throw new Error("Restricted loopback or private host target blocked (SSRF attempt)");
       }
-    } catch (urlErr: any) {
-      throw new Error(`Security validation failed for meme image: ${urlErr.message}`);
+    } catch (urlErr) {
+      const errMsg = urlErr instanceof Error ? urlErr.message : String(urlErr);
+      throw new Error(`Security validation failed for meme image: ${errMsg}`);
     }
     // -----------------------------
 
@@ -96,15 +95,36 @@ export async function GET() {
       },
     });
   } catch (err) {
-    console.error("Meme API Fetch failed, serving dynamic local SVG joke fallback:", err);
+    console.error("Meme API Fetch failed, attempting GIF fallback:", err);
 
+    // Try a random fallback GIF first (Bug #7 fix: FALLBACK_MEMES was declared but never used)
+    try {
+      const fallbackUrl = FALLBACK_MEMES[Math.floor(Math.random() * FALLBACK_MEMES.length)];
+      const fallbackRes = await fetch(fallbackUrl, { cache: "no-store" });
+      if (fallbackRes.ok) {
+        const contentType = fallbackRes.headers.get("content-type") || "image/gif";
+        const arrayBuffer = await fallbackRes.arrayBuffer();
+        return new Response(arrayBuffer, {
+          headers: {
+            "Content-Type": contentType,
+            "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+          },
+        });
+      }
+    } catch {
+      console.error("Fallback GIF also failed, serving SVG joke.");
+    }
+
+    // Final fallback: SVG dev joke card
     const DEVELOPER_JOKES = [
       { q: "Why do programmers wear glasses?", a: "Because they can't C#!" },
-      { q: "A SQL query walks into a bar, walks up to two tables and asks...", a: "\"Can I join you?\"" },
+      { q: "A SQL query walks into a bar, walks up to two tables and asks...", a: '"Can I join you?"' },
       { q: "What is a programmer's favorite hangout place?", a: "Foo Bar" },
       { q: "How many programmers does it take to change a light bulb?", a: "None. It's a hardware problem!" },
       { q: "Why did the programmer quit their job?", a: "Because they didn't get arrays!" },
-      { q: "['hip', 'hip']", a: "(hip hip array!)" }
+      { q: "['hip', 'hip']", a: "(hip hip array!)" },
     ];
 
     const joke = DEVELOPER_JOKES[Math.floor(Math.random() * DEVELOPER_JOKES.length)];
@@ -120,17 +140,17 @@ export async function GET() {
       <rect width="100%" height="100%" rx="12" fill="#faf9f5" stroke="#e6dfd8" stroke-width="1.5"/>
       <g>
         <!-- Branding header -->
-        <text x="30" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="url(#joke-grad)" letter-spacing="1.5px">😄 DAILY DEV JOKE</text>
-        
+        <text x="30" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="url(#joke-grad)" letter-spacing="1.5px">DAILY DEV JOKE</text>
+
         <!-- Big quote decoration -->
-        <text x="570" y="50" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#cc785c" opacity="0.2" text-anchor="end">”</text>
+        <text x="570" y="50" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#cc785c" opacity="0.2" text-anchor="end">&#8220;</text>
 
         <!-- Question -->
         <text x="40" y="86" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700" fill="#141413">${joke.q}</text>
-        
+
         <!-- Answer -->
         <text x="40" y="132" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="700" fill="#cc785c">${joke.a}</text>
-        
+
         <!-- Branding tagline -->
         <text x="570" y="175" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="8" font-weight="600" fill="#8b949e" letter-spacing="0.5px" text-anchor="end">PROFILECREST GENERATOR</text>
       </g>

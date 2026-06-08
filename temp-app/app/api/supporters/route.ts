@@ -88,7 +88,16 @@ async function getSupporters(): Promise<Supporter[]> {
       
       if (!error && data) {
         // Map database snake_case fields to interface camelCase fields
-        const mappedList = data.map((sup: any) => ({
+        interface SupabaseSupporter {
+          name: string;
+          coffees: number;
+          message: string;
+          currency: string;
+          amount: number;
+          timestamp: string;
+          payment_id?: string;
+        }
+        const mappedList = (data as unknown as SupabaseSupporter[]).map((sup) => ({
           name: sup.name,
           coffees: sup.coffees,
           message: sup.message,
@@ -114,9 +123,9 @@ async function getSupporters(): Promise<Supporter[]> {
     const data = await fs.readFile(dbPath, "utf-8");
     supportersCache = JSON.parse(data);
     return supportersCache!;
-  } catch (error: any) {
+  } catch (error) {
     // If file doesn't exist, create it with default seed data
-    if (error.code === "ENOENT") {
+    if (error instanceof Error && (error as NodeJS.ErrnoException).code === "ENOENT") {
       try {
         // Ensure data directory exists
         await fs.mkdir(path.dirname(dbPath), { recursive: true });
@@ -248,8 +257,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(updated);
-  } catch (err: any) {
+  } catch (err) {
     console.error("Supporters POST Error:", err);
-    return NextResponse.json({ error: "Failed to parse request payload: " + err.message }, { status: 400 });
+    const errMsg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: "Failed to parse request payload: " + errMsg }, { status: 400 });
   }
 }

@@ -3,10 +3,10 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useFormStore } from "@/store/formStore";
+import { useFormStore, FormState, FormActions } from "@/store/formStore";
 import { generateMarkdown } from "@/utils/markdownGenerator";
 import { techStack, techCategories } from "@/data/techStack";
-import { socialLinks, donationLinks, statsThemes } from "@/data/links";
+import { socialLinks, donationLinks, statsThemes, activityGraphThemes } from "@/data/links";
 import { themePresets } from "@/data/presets";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -58,24 +58,34 @@ function GeneratePageContent() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setOrigin(window.location.origin);
+      const currentOrigin = window.location.origin;
+      requestAnimationFrame(() => {
+        setOrigin(currentOrigin);
+      });
     }
   }, []);
 
-  // Pre-fill username from URL (with proper dependency tracking)
+  // Bug #11 fix: select stable individual values from store.
+  const setField = useFormStore((s) => s.setField);
+  const storeUsername = useFormStore((s) => s.username);
+
+  // Bug #2 fix: narrow deps to specific values, not the whole store,
+  // preventing a potential username double-write on unrelated store mutations.
   useEffect(() => {
     const u = searchParams.get("u");
-    if (u && !store.username) {
-      store.setField("username", u);
+    if (u && !storeUsername) {
+      setField("username", u);
     }
-  }, [searchParams, store]);
+  }, [searchParams, storeUsername, setField]);
 
   const markdown = generateMarkdown(store, origin);
 
+  // Bug #11 fix: use getState() to avoid stale closure; empty dep array is correct.
   const handleCopy = useCallback(async () => {
     try {
       const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://profile-crest.vercel.app";
-      const finalMarkdown = generateMarkdown(store, currentOrigin);
+      const snapshot = useFormStore.getState();
+      const finalMarkdown = generateMarkdown(snapshot, currentOrigin);
       await navigator.clipboard.writeText(finalMarkdown);
       setCopied(true);
       toast.success("Copied to clipboard! 🎉");
@@ -83,11 +93,12 @@ function GeneratePageContent() {
     } catch {
       toast.error("Failed to copy. Please select and copy manually.");
     }
-  }, [store]);
+  }, []);
 
   const handleDownload = useCallback(() => {
     const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://profile-crest.vercel.app";
-    const finalMarkdown = generateMarkdown(store, currentOrigin);
+    const snapshot = useFormStore.getState();
+    const finalMarkdown = generateMarkdown(snapshot, currentOrigin);
     const blob = new Blob([finalMarkdown], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -96,7 +107,7 @@ function GeneratePageContent() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Downloaded README.md!");
-  }, [store]);
+  }, []);
 
   return (
     <div style={{ background: "var(--bg-primary)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -146,7 +157,8 @@ function GeneratePageContent() {
                   <div className={`step-dot ${step === s.id ? "active" : step > s.id ? "completed" : ""}`}>
                     {step > s.id ? "✓" : s.id}
                   </div>
-                  <span style={{ fontSize: 12, color: step === s.id ? "var(--accent)" : "var(--text-dim)", display: "none" }}>{s.label}</span>
+                  {/* Bug #10 fix: CSS class shows label on >=1280px, hidden on mobile */}
+                  <span className="step-label" style={{ color: step === s.id ? "var(--accent)" : "var(--text-dim)" }}>{s.label}</span>
                 </button>
                 {i < STEPS.length - 1 && (
                   <div style={{ width: 32, height: 1, background: step > s.id ? "var(--accent-dark)" : "var(--border)", margin: "0 4px", flexShrink: 0 }} />
@@ -261,7 +273,7 @@ function MarkdownPreviewPanel({
               ⚠️ Local Development Warning:
             </p>
             <p style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 1.5 }}>
-              You are running locally on localhost. The self-hosted quote and random meme cards generated point to your local URL (<code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 4px", borderRadius: 4 }}>http://localhost:3000</code>). GitHub's proxy servers cannot access localhost, so these two images will appear broken on your real GitHub profile README. 
+              You are running locally on localhost. The self-hosted quote and random meme cards generated point to your local URL (<code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 4px", borderRadius: 4 }}>http://localhost:3000</code>). GitHub&apos;s proxy servers cannot access localhost, so these two images will appear broken on your real GitHub profile README. 
               <br/><br/>
               <strong>To fix this:</strong> Deploy your ProfileCrest generator repository to Vercel (or any host) first, and copy the final markdown from your deployed website!
             </p>
@@ -288,32 +300,34 @@ function MarkdownPreviewPanel({
                       style={{ maxWidth: "100%", height: "auto", borderRadius: 4, marginRight: 4, marginBottom: 4, display: "inline-block" }}
                     />
                   ),
-                  td: ({ node, ...props }) => {
-                    const { vAlign, style, ...rest } = props as any;
+                  td: (props) => {
+                    const rest = { ...props } as Record<string, unknown>;
+                    delete rest.node;
+                    delete rest.vAlign;
                     return (
                       <td
                         style={{
-                          ...style,
-                          verticalAlign: vAlign || undefined,
+                          ...(props.style as React.CSSProperties),
                           padding: "8px",
                           border: "1px solid #30363d",
                         }}
-                        {...rest}
+                        {...(rest as React.ComponentPropsWithoutRef<"td">)}
                       />
                     );
                   },
-                  th: ({ node, ...props }) => {
-                    const { vAlign, style, ...rest } = props as any;
+                  th: (props) => {
+                    const rest = { ...props } as Record<string, unknown>;
+                    delete rest.node;
+                    delete rest.vAlign;
                     return (
                       <th
                         style={{
-                          ...style,
-                          verticalAlign: vAlign || undefined,
+                          ...(props.style as React.CSSProperties),
                           padding: "8px",
                           border: "1px solid #30363d",
                           fontWeight: "bold",
                         }}
-                        {...rest}
+                        {...(rest as React.ComponentPropsWithoutRef<"th">)}
                       />
                     );
                   }
@@ -367,10 +381,16 @@ function MarkdownPreviewPanel({
 // ==========================================
 
 interface StepProps {
-  store: any;
+  store: FormState & FormActions;
 }
 
 function BasicInfoStep({ store }: StepProps) {
+  // Bug #1 fix: controlled inputs instead of document.getElementById DOM refs
+  const [showcaseName, setShowcaseName] = useState("");
+  const [showcaseDesc, setShowcaseDesc] = useState("");
+  const [showcaseUrl, setShowcaseUrl] = useState("");
+  const [showcaseTags, setShowcaseTags] = useState("");
+
   return (
     <div className="animate-fade-in-up">
               <div className="section-card">
@@ -458,12 +478,16 @@ function BasicInfoStep({ store }: StepProps) {
                     placeholder="Project Name (e.g., My Awesome Library)"
                     id="showcase_name"
                     aria-label="Project Name"
+                    value={showcaseName}
+                    onChange={(e) => setShowcaseName(e.target.value)}
                   />
                   <input
                     className="form-input"
                     placeholder="Short description of what the project does…"
                     id="showcase_desc"
                     aria-label="Short description of the project"
+                    value={showcaseDesc}
+                    onChange={(e) => setShowcaseDesc(e.target.value)}
                   />
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <input
@@ -471,32 +495,32 @@ function BasicInfoStep({ store }: StepProps) {
                       placeholder="Repository/Web URL (https://…)"
                       id="showcase_url"
                       aria-label="Repository or Web URL"
+                      value={showcaseUrl}
+                      onChange={(e) => setShowcaseUrl(e.target.value)}
                     />
                     <input
                       className="form-input"
                       placeholder="Tech stack tags (React, Rust)"
                       id="showcase_tags"
                       aria-label="Tech stack tags"
+                      value={showcaseTags}
+                      onChange={(e) => setShowcaseTags(e.target.value)}
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => {
-                      const nameEl = document.getElementById("showcase_name") as HTMLInputElement;
-                      const descEl = document.getElementById("showcase_desc") as HTMLInputElement;
-                      const urlEl = document.getElementById("showcase_url") as HTMLInputElement;
-                      const tagsEl = document.getElementById("showcase_tags") as HTMLInputElement;
-                      if (nameEl && nameEl.value.trim()) {
+                      if (showcaseName.trim()) {
                         store.addShowcaseProject(
-                          nameEl.value.trim(),
-                          descEl ? descEl.value.trim() : "",
-                          urlEl ? urlEl.value.trim() : "",
-                          tagsEl ? tagsEl.value.trim() : ""
+                          showcaseName.trim(),
+                          showcaseDesc.trim(),
+                          showcaseUrl.trim(),
+                          showcaseTags.trim()
                         );
-                        nameEl.value = "";
-                        if (descEl) descEl.value = "";
-                        if (urlEl) urlEl.value = "";
-                        if (tagsEl) tagsEl.value = "";
+                        setShowcaseName("");
+                        setShowcaseDesc("");
+                        setShowcaseUrl("");
+                        setShowcaseTags("");
                         toast.success("Showcase project added! 🎉");
                       } else {
                         toast.error("Please enter a Project Name!");
@@ -513,7 +537,7 @@ function BasicInfoStep({ store }: StepProps) {
                   <div style={{ marginTop: 16 }}>
                     <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>Your Showcase Projects:</p>
                     <div style={{ display: "grid", gap: 8 }}>
-                      {store.showcaseProjects.map((p: any) => (
+                      {store.showcaseProjects.map((p: FormState["showcaseProjects"][number]) => (
                         <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px" }}>
                           <div>
                             <p style={{ fontSize: 14, fontWeight: 600, color: "var(--accent)" }}>{p.name}</p>
@@ -623,7 +647,7 @@ function SocialsStep({ store }: StepProps) {
                     <div style={{ marginTop: 16 }}>
                       <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>Your Custom Socials:</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                        {store.customSocials.map((cs: any) => (
+                        {store.customSocials.map((cs: FormState["customSocials"][number]) => (
                           <span key={cs.id} className="selected-chip" style={{ background: `#${cs.color}22`, borderColor: `#${cs.color}44`, color: `#${cs.color}` }}>
                             {cs.name}
                             <button type="button" onClick={() => store.removeCustomSocial(cs.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "red", marginLeft: 6 }}>×</button>
@@ -667,7 +691,7 @@ function TechStackStep({ store }: StepProps) {
                         </span>
                       ) : null;
                     })}
-                    {store.customTech.map((ct: any) => (
+                    {store.customTech.map((ct: FormState["customTech"][number]) => (
                       <span key={ct.id} className="selected-chip" style={{ background: `#${ct.color}22`, borderColor: `#${ct.color}44`, color: `#${ct.color}` }}>
                         {ct.name} (Custom)
                         <button type="button" onClick={() => store.removeCustomTech(ct.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "red", fontSize: 14, lineHeight: 1 }}>×</button>
@@ -769,6 +793,8 @@ function TechStackStep({ store }: StepProps) {
 }
 
 function GitHubStatsStep({ store }: StepProps) {
+  // Bug #9 fix: detect when a preset is overriding the individual theme dropdowns
+  const isPresetActive = store.themePreset !== "default";
   return (
     <div className="animate-fade-in-up">
               <div className="section-card">
@@ -813,7 +839,20 @@ function GitHubStatsStep({ store }: StepProps) {
 
               <div className="section-card">
                 <p className="section-title">🎨 Themes</p>
-                <div style={{ display: "grid", gap: 14 }}>
+
+                {/* Bug #9 fix: show notice when preset overrides individual theme dropdowns */}
+                {isPresetActive && (
+                  <div style={{ background: "rgba(99, 102, 241, 0.08)", border: "1px solid rgba(99, 102, 241, 0.3)", padding: "10px 14px", borderRadius: 8, marginBottom: 14 }}>
+                    <p style={{ color: "#818cf8", fontWeight: 600, fontSize: 12.5, margin: 0 }}>
+                      🎨 Theme preset active: <strong>{store.themePreset}</strong>
+                    </p>
+                    <p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 4, marginBottom: 0 }}>
+                      These dropdowns are overridden by your selected preset. To use custom per-card themes, set the preset to <strong>Standard Dark (Default)</strong> on Step 1.
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ display: "grid", gap: 14, opacity: isPresetActive ? 0.5 : 1, pointerEvents: isPresetActive ? "none" : "auto" }}>
                   {store.stats.showStats && (
                     <div>
                       <label className="form-label" htmlFor="stats-card-theme-select">Stats Card Theme</label>
@@ -843,6 +882,14 @@ function GitHubStatsStep({ store }: StepProps) {
                       <label className="form-label" htmlFor="trophies-theme-select">Trophies Theme</label>
                       <select id="trophies-theme-select" className="form-select" value={store.stats.trophyTheme} onChange={(e) => store.setStats({ trophyTheme: e.target.value })}>
                         {statsThemes.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {store.stats.showActivityGraph && (
+                    <div>
+                      <label className="form-label" htmlFor="activity-graph-theme-select">Activity Graph Theme</label>
+                      <select id="activity-graph-theme-select" className="form-select" value={store.stats.activityGraphTheme} onChange={(e) => store.setStats({ activityGraphTheme: e.target.value })}>
+                        {activityGraphThemes.map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
                   )}
@@ -945,7 +992,7 @@ function WorkflowsStep({ store }: StepProps) {
                       key={lay.id}
                       type="button"
                       onClick={() => {
-                        store.setLayoutPreset(lay.id as any);
+                        store.setLayoutPreset(lay.id as FormState["layoutPreset"]);
                         toast.success(`Layout changed to ${lay.name}! 🎉`);
                       }}
                       className={`tech-badge ${store.layoutPreset === lay.id ? "selected" : ""}`}
@@ -1115,7 +1162,7 @@ jobs:
               </div>
 
               <div className="section-card" style={{ marginTop: 16 }}>
-                <p className="section-title">🎊 You're all set!</p>
+                <p className="section-title">🎊 You&apos;re all set!</p>
                 <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.6, marginBottom: 16 }}>
                   Your README is generated and ready to use! Copy it and paste it into your GitHub profile repository.
                 </p>

@@ -95,15 +95,38 @@ function buildShowcaseContent(f: FormState): string {
   return md;
 }
 
+// Bug #3 fix: maps a stats theme name to the activity graph's theme format
+function toActivityGraphTheme(theme: string): string {
+  if (theme === "tokyonight") return "tokyo-night";
+  if (theme === "dracula") return "dracula";
+  if (theme === "github_dark" || theme === "github_dark_dimmed") return "github-dark";
+  // If the theme is already a valid activity-graph theme (like 'react', 'vue', etc.), return it as is
+  const validGraphThemes = [
+    "default", "react", "react-dark", "github", "github-compact", 
+    "xcode", "rogue", "merko", "vue", "tokyo-night", "high-contrast"
+  ];
+  if (validGraphThemes.includes(theme)) {
+    return theme;
+  }
+  return "github-compact";
+}
+
 export function generateMarkdown(f: FormState, baseUrl: string = "https://profile-crest.vercel.app"): string {
   // 1. Resolve Theme Presets values
   const activePreset = themePresets.find((p) => p.id === f.themePreset) || themePresets[0];
   const usePresetColor = f.themePreset !== "default";
-  
+
   const badgeColor = usePresetColor ? activePreset.badgeColor : null;
   const statsTheme = usePresetColor ? activePreset.statsTheme : f.stats.statsTheme;
+  const languagesTheme = usePresetColor ? activePreset.statsTheme : f.stats.languagesTheme;
+  const streakTheme = usePresetColor ? activePreset.statsTheme : f.stats.streakTheme;
   const trophyTheme = usePresetColor ? activePreset.trophyTheme : f.stats.trophyTheme;
   const visitorColor = usePresetColor ? activePreset.visitorColor : f.visitorCounter.color;
+  // Activity graph theme: use preset's statsTheme (mapped) when a preset is active,
+  // otherwise use the user's own activityGraphTheme selection from step 4.
+  const activityGraphTheme = toActivityGraphTheme(
+    usePresetColor ? activePreset.statsTheme : f.stats.activityGraphTheme
+  );
 
   // Render layouts
   if (f.layoutPreset === "bento") {
@@ -160,7 +183,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
         md += `        <a href="https://github.com/ryo-ma/github-profile-trophy"><img src="https://github-profile-trophy.vercel.app/?username=${f.username}&theme=${trophyTheme}" alt="Trophies" /></a><br/><br/>\n`;
       }
       if (f.stats.showStreak) {
-        md += `        <img src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" />\n`;
+        md += `        <img src="https://streak-stats.demolab.com/?user=${f.username}&theme=${streakTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" />\n`;
       }
       md += `      </p>\n`;
       md += `    </td>\n`;
@@ -202,7 +225,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     // Activity graph
     if (f.stats.showActivityGraph && f.username) {
       md += `\n### 📈 Weekly Contribution Graph\n\n`;
-      md += `[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&theme=${activePreset.statsTheme === "tokyonight" ? "tokyo-night" : activePreset.statsTheme === "dracula" ? "dracula" : "github-compact"})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
+      md += `[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&theme=${activityGraphTheme})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
     }
 
     // Meme and Quote
@@ -266,7 +289,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
         md += `  <img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/><br/>\n`;
       }
       if (f.stats.showStreak) {
-        md += `  <img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" /><br/><br/>\n`;
+        md += `  <img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${streakTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" /><br/><br/>\n`;
       }
       md += `</p>\n`;
     }
@@ -337,17 +360,17 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += `<img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/>\n`;
     }
     if (f.stats.showTopLanguages) {
-      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&layout=compact&cache_seconds=86400" alt="Top Languages" /><br/>\n`;
+      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&theme=${languagesTheme}&hide_border=false&include_all_commits=true&count_private=true&layout=compact&cache_seconds=86400" alt="Top Languages" /><br/>\n`;
     }
     if (f.stats.showStreak) {
-      md += `<img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${statsTheme}&hide_border=false&cache_seconds=86400" alt="GitHub Streak" /><br/>\n`;
+      md += `<img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${streakTheme}&hide_border=false&cache_seconds=86400" alt="GitHub Streak" /><br/>\n`;
     }
     md += `</p>\n`;
   }
 
   // Activity Graph
   if (f.stats.showActivityGraph && f.username) {
-    md += `\n[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&theme=${activePreset.statsTheme === "tokyonight" ? "tokyo-night" : activePreset.statsTheme === "dracula" ? "dracula" : "github-compact"})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
+    md += `\n[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&theme=${activityGraphTheme})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
   }
 
   // Meme

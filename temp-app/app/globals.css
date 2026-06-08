@@ -201,6 +201,19 @@ body {
   color: var(--accent-dark);
 }
 
+/* Step labels: hidden on mobile, visible on desktop */
+.step-label {
+  display: none;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+@media (min-width: 1280px) {
+  .step-label {
+    display: block;
+  }
+}
+
 /* Markdown preview */
 .markdown-preview {
   font-family: 'Fira Code', monospace;
@@ -621,7 +634,7 @@ input:checked + .toggle-slider::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(9, 9, 11, 0.9);
+  background: rgba(250, 249, 245, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   position: sticky;
