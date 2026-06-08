@@ -7,6 +7,42 @@ function encode(str: string) {
   return encodeURIComponent(str);
 }
 
+function getProficiencyColor(p: number): string {
+  if (p >= 90) return "brightgreen";
+  if (p >= 75) return "green";
+  if (p >= 60) return "yellowgreen";
+  if (p >= 40) return "yellow";
+  if (p >= 20) return "orange";
+  return "red";
+}
+
+function buildStatsParams(f: FormState): string {
+  const t = f.statsToggles || { hideRank: false, showIcons: true, includeAllCommits: true };
+  const parts: string[] = [];
+  parts.push(`hide_border=false`);
+  if (t.hideRank) parts.push(`hide_rank=true`);
+  if (t.showIcons) parts.push(`show_icons=true`);
+  if (t.includeAllCommits) {
+    parts.push(`include_all_commits=true`);
+    parts.push(`count_private=true`);
+  }
+  parts.push(`cache_seconds=86400`);
+  return parts.join("&");
+}
+
+function buildLangsParams(f: FormState): string {
+  const t = f.statsToggles || { includeAllCommits: true, langsLayout: 'compact' };
+  const parts: string[] = [];
+  parts.push(`hide_border=false`);
+  if (t.includeAllCommits) {
+    parts.push(`include_all_commits=true`);
+    parts.push(`count_private=true`);
+  }
+  parts.push(`layout=${t.langsLayout || 'compact'}`);
+  parts.push(`cache_seconds=86400`);
+  return parts.join("&");
+}
+
 // Sub-component builders
 function buildAbout(f: FormState): string {
   const aboutItems: string[] = [];
@@ -67,14 +103,30 @@ function buildTechBadges(f: FormState, usePresetColor: boolean, presetBadgeColor
     const color = f.customTheme.enabled 
       ? f.customTheme.badgeColor.replace("#", "") 
       : (usePresetColor && presetBadgeColor ? presetBadgeColor : t.color);
-    return [`<img src="https://img.shields.io/badge/${encode(t.name)}-${color}.svg?style=for-the-badge&logo=${t.slug}&logoColor=white" alt="${t.name}"/>`];
+    const mainBadge = `<img src="https://img.shields.io/badge/${encode(t.name)}-${color}.svg?style=for-the-badge&logo=${t.slug}&logoColor=white" alt="${t.name}"/>`;
+    
+    const proficiency = f.techProficiencies ? f.techProficiencies[id] : undefined;
+    if (proficiency && proficiency > 0) {
+      const progColor = getProficiencyColor(proficiency);
+      const progBadge = `<img src="https://img.shields.io/badge/Proficiency-${proficiency}%25-${progColor}?style=flat-square" alt="${proficiency}%"/>`;
+      return [`${mainBadge}${progBadge}`];
+    }
+    return [mainBadge];
   });
 
   const customBadges = (f.customTech || []).map((ct) => {
     const color = f.customTheme.enabled 
       ? f.customTheme.badgeColor.replace("#", "") 
       : (usePresetColor && presetBadgeColor ? presetBadgeColor : ct.color);
-    return `<img src="https://img.shields.io/badge/${encode(ct.name)}-${color}.svg?style=for-the-badge" alt="${ct.name}"/>`;
+    const mainBadge = `<img src="https://img.shields.io/badge/${encode(ct.name)}-${color}.svg?style=for-the-badge" alt="${ct.name}"/>`;
+    
+    const proficiency = f.techProficiencies ? f.techProficiencies[ct.id] : undefined;
+    if (proficiency && proficiency > 0) {
+      const progColor = getProficiencyColor(proficiency);
+      const progBadge = `<img src="https://img.shields.io/badge/Proficiency-${proficiency}%25-${progColor}?style=flat-square" alt="${proficiency}%"/>`;
+      return `${mainBadge}${progBadge}`;
+    }
+    return mainBadge;
   });
 
   return [...badges, ...customBadges].join("\n");
@@ -192,7 +244,8 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
         md += `      <h3>📊 Contributions & stats</h3>\n`;
         if (f.username && f.stats.showStats) {
           const query = useCustom && customColorQuery ? customColorQuery : `theme=${statsTheme}`;
-          md += `      <img src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" width="100%" />\n`;
+          const params = buildStatsParams(f);
+          md += `      <img src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&${params}" alt="GitHub Stats" width="100%" />\n`;
         } else {
           md += `      Stats card disabled or username missing\n`;
         }
@@ -247,6 +300,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
           if (socialBadges) {
             md += `      <h3>🌐 Connect with me</h3>\n`;
             md += `      <p align="left">\n${socialBadges}\n</p>\n`;
+            if (f.lanyard && f.lanyard.show && f.lanyard.userId) {
+              const themeQuery = f.lanyard.theme ? `?theme=${f.lanyard.theme}` : "";
+              md += `      <p align="left">\n        <a href="https://discord.com/users/${f.lanyard.userId}" target="_blank">\n          <img src="https://lanyard.vercel.app/api/${f.lanyard.userId}${themeQuery}" alt="Discord Status" width="100%" />\n        </a>\n      </p>\n`;
+            }
           }
           md += `    </td>\n`;
           md += `    <td width="50%" valign="top">\n`;
@@ -275,9 +332,12 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += buildBlogFeed(f);
     }
 
-    // Meme and Quote
+    // Meme and Quote and Joke
     if (f.fun.showQuote) {
       md += `\n<p align="center"><img src="${baseUrl}/api/quote?theme=${f.fun.quoteTheme}" alt="Quote" /></p>\n`;
+    }
+    if (f.fun.showJoke) {
+      md += `\n<p align="center"><img src="${baseUrl}/api/joke?theme=${f.fun.jokeTheme || 'dark'}" alt="Developer Joke" /></p>\n`;
     }
     if (f.fun.showMeme) {
       md += `\n### 😄 Random Dev Meme\n\n<img src="${baseUrl}/api/meme" style="height: 400px;" alt="Random meme"/>\n`;
@@ -327,6 +387,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     const socialBadges = buildSocialBadges(f, usePresetColor || useCustom, badgeColor);
     if (socialBadges) {
       md += `## 🌐 Professional Profiles\n<p align="left">\n${socialBadges}\n</p>\n\n`;
+      if (f.lanyard && f.lanyard.show && f.lanyard.userId) {
+        const themeQuery = f.lanyard.theme ? `?theme=${f.lanyard.theme}` : "";
+        md += `<p align="left">\n  <a href="https://discord.com/users/${f.lanyard.userId}" target="_blank">\n    <img src="https://lanyard.vercel.app/api/${f.lanyard.userId}${themeQuery}" alt="Discord Status" />\n  </a>\n</p>\n\n`;
+      }
     }
 
     // GitHub stats summary
@@ -334,7 +398,8 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += `## 📈 GitHub Metrics\n<p align="left">\n`;
       if (f.stats.showStats) {
         const query = useCustom && customColorQuery ? customColorQuery : `theme=${statsTheme}`;
-        md += `  <img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/><br/>\n`;
+        const params = buildStatsParams(f);
+        md += `  <img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&${params}" alt="GitHub Stats" /><br/><br/>\n`;
       }
       if (f.stats.showStreak) {
         const query = useCustom && customColorQuery ? customColorQuery : `theme=${streakTheme}`;
@@ -355,6 +420,21 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     const donationBadges = buildDonationBadges(f);
     if (donationBadges) {
       md += `## 💰 Support my open source journey\n<p align="left">\n${donationBadges}\n</p>\n`;
+    }
+
+    // Fun Corner for Resume
+    if (f.fun.showQuote || f.fun.showJoke || f.fun.showMeme) {
+      md += `\n## 🎈 Fun Corner\n<p align="left">\n`;
+      if (f.fun.showQuote) {
+        md += `  <img align="center" src="${baseUrl}/api/quote?theme=${f.fun.quoteTheme}" alt="Quote" /><br/><br/>\n`;
+      }
+      if (f.fun.showJoke) {
+        md += `  <img align="center" src="${baseUrl}/api/joke?theme=${f.fun.jokeTheme || 'dark'}" alt="Developer Joke" /><br/><br/>\n`;
+      }
+      if (f.fun.showMeme) {
+        md += `  <img align="center" src="${baseUrl}/api/meme" style="height: 400px;" alt="Random meme"/><br/><br/>\n`;
+      }
+      md += `</p>\n`;
     }
 
     return md.trim();
@@ -387,15 +467,22 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     md += `\n${summary}\n`;
   }
 
-  // Fun: Quote
+  // Fun: Quote & Joke
   if (f.fun.showQuote) {
     md += `\n<p align="center"><img src="${baseUrl}/api/quote?theme=${f.fun.quoteTheme}" alt="Quote" /></p>\n`;
+  }
+  if (f.fun.showJoke) {
+    md += `\n<p align="center"><img src="${baseUrl}/api/joke?theme=${f.fun.jokeTheme || 'dark'}" alt="Developer Joke" /></p>\n`;
   }
 
   // Social connections
   const socialBadges = buildSocialBadges(f, usePresetColor || useCustom, badgeColor);
   if (socialBadges) {
     md += `\n<h3 align="left">Connect with me:</h3>\n<p align="left">\n${socialBadges}\n</p>\n`;
+    if (f.lanyard && f.lanyard.show && f.lanyard.userId) {
+      const themeQuery = f.lanyard.theme ? `?theme=${f.lanyard.theme}` : "";
+      md += `\n<p align="left">\n  <a href="https://discord.com/users/${f.lanyard.userId}" target="_blank">\n    <img src="https://lanyard.vercel.app/api/${f.lanyard.userId}${themeQuery}" alt="Discord Status" />\n  </a>\n</p>\n`;
+    }
   }
 
   // Tech stack
@@ -415,11 +502,13 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     md += `\n<h3 align="left">GitHub Stats:</h3>\n<p align="left">\n`;
     if (f.stats.showStats) {
       const query = useCustom && customColorQuery ? customColorQuery : `theme=${statsTheme}`;
-      md += `<img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/>\n`;
+      const params = buildStatsParams(f);
+      md += `<img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&${params}" alt="GitHub Stats" /><br/>\n`;
     }
     if (f.stats.showTopLanguages) {
       const query = useCustom && customColorQuery ? customColorQuery : `theme=${languagesTheme}`;
-      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&layout=compact&cache_seconds=86400" alt="Top Languages" /><br/>\n`;
+      const params = buildLangsParams(f);
+      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&${query}&${params}" alt="Top Languages" /><br/>\n`;
     }
     if (f.stats.showStreak) {
       const query = useCustom && customColorQuery ? customColorQuery : `theme=${streakTheme}`;

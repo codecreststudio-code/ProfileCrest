@@ -13,6 +13,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import toast, { Toaster } from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 interface StepProps {
   store: FormState & FormActions;
@@ -81,6 +82,11 @@ function GeneratePageContent() {
       await navigator.clipboard.writeText(finalMarkdown);
       setCopied(true);
       toast.success("Copied to clipboard! 🎉");
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Failed to copy. Please select and copy manually.");
@@ -99,6 +105,11 @@ function GeneratePageContent() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Downloaded README.md!");
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
   }, []);
 
   const localizedSteps = [
@@ -684,22 +695,78 @@ function TechStackStep({ store }: StepProps) {
 
         {/* Selected chips */}
         {(store.techStack.length > 0 || store.customTech.length > 0) && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-            {store.techStack.map((id) => {
-              const t = techStack.find((x) => x.id === id);
-              return t ? (
-                <span key={id} className="selected-chip">
-                  {t.name}
-                  <button type="button" onClick={() => store.toggleTech(id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: 14, lineHeight: 1 }}>×</button>
+          <div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+              {store.techStack.map((id) => {
+                const t = techStack.find((x) => x.id === id);
+                return t ? (
+                  <span key={id} className="selected-chip">
+                    {t.name}
+                    <button type="button" onClick={() => store.toggleTech(id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: 14, lineHeight: 1 }}>×</button>
+                  </span>
+                ) : null;
+              })}
+              {store.customTech.map((ct) => (
+                <span key={ct.id} className="selected-chip" style={{ background: `#${ct.color}22`, borderColor: `#${ct.color}44`, color: `#${ct.color}` }}>
+                  {ct.name} (Custom)
+                  <button type="button" onClick={() => store.removeCustomTech(ct.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "red", fontSize: 14, lineHeight: 1 }}>×</button>
                 </span>
-              ) : null;
-            })}
-            {store.customTech.map((ct) => (
-              <span key={ct.id} className="selected-chip" style={{ background: `#${ct.color}22`, borderColor: `#${ct.color}44`, color: `#${ct.color}` }}>
-                {ct.name} (Custom)
-                <button type="button" onClick={() => store.removeCustomTech(ct.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "red", fontSize: 14, lineHeight: 1 }}>×</button>
-              </span>
-            ))}
+              ))}
+            </div>
+
+            {/* Tech stack proficiency sliders */}
+            <div style={{ marginTop: 20, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+              <p style={{ fontWeight: 600, fontSize: 13.5, color: "var(--accent)", marginBottom: 8 }}>📊 Adjust Proficiency (Optional)</p>
+              <p style={{ color: "var(--text-muted)", fontSize: 12, marginBottom: 14 }}>
+                Set a proficiency level to show a progress shield next to the tech logo (leave at 0 to hide).
+              </p>
+              <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))" }}>
+                {store.techStack.map((id) => {
+                  const t = techStack.find((x) => x.id === id);
+                  if (!t) return null;
+                  const val = store.techProficiencies[id] || 0;
+                  return (
+                    <div key={id} style={{ background: "var(--bg-secondary)", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 600 }}>{t.name}</span>
+                        <span style={{ fontSize: 12, color: "var(--accent)", fontWeight: 700 }}>{val > 0 ? `${val}%` : "None"}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        aria-label={`${t.name} proficiency slider`}
+                        value={val}
+                        onChange={(e) => store.setTechProficiency(id, parseInt(e.target.value))}
+                        style={{ width: "100%", accentColor: "var(--accent)", cursor: "pointer" }}
+                      />
+                    </div>
+                  );
+                })}
+                {store.customTech.map((ct) => {
+                  const val = store.techProficiencies[ct.id] || 0;
+                  return (
+                    <div key={ct.id} style={{ background: "var(--bg-secondary)", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 600 }}>{ct.name} <span style={{ fontSize: 10, color: "var(--text-muted)" }}>(Custom)</span></span>
+                        <span style={{ fontSize: 12, color: "var(--accent)", fontWeight: 700 }}>{val > 0 ? `${val}%` : "None"}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        aria-label={`${ct.name} proficiency slider`}
+                        value={val}
+                        onChange={(e) => store.setTechProficiency(ct.id, parseInt(e.target.value))}
+                        style={{ width: "100%", accentColor: "var(--accent)", cursor: "pointer" }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
@@ -839,6 +906,84 @@ function GitHubStatsStep({ store }: StepProps) {
           </div>
         ))}
       </div>
+
+      {/* Advanced Stats Options */}
+      {(store.stats.showStats || store.stats.showTopLanguages) && (
+        <div className="section-card" style={{ marginTop: 16 }}>
+          <p className="section-title">⚙️ Advanced Stats Options</p>
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 16 }}>
+            Customize display parameters of your GitHub Stats and Languages cards.
+          </p>
+          <div style={{ display: "grid", gap: 14 }}>
+            {store.stats.showStats && (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <p style={{ fontWeight: 500, fontSize: 14, color: "var(--text-primary)" }}>Hide Rank</p>
+                    <p style={{ color: "var(--text-muted)", fontSize: 12 }}>Hide global commit rank badge (e.g. S, A+)</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      aria-label="Hide global rank in stats card"
+                      checked={store.statsToggles?.hideRank || false}
+                      onChange={(e) => store.setStatsToggles({ hideRank: e.target.checked })}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <p style={{ fontWeight: 500, fontSize: 14, color: "var(--text-primary)" }}>Show Icons</p>
+                    <p style={{ color: "var(--text-muted)", fontSize: 12 }}>Display icons next to numerical stats</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      aria-label="Show icons in stats card"
+                      checked={store.statsToggles?.showIcons ?? true}
+                      onChange={(e) => store.setStatsToggles({ showIcons: e.target.checked })}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+              </>
+            )}
+            
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ fontWeight: 500, fontSize: 14, color: "var(--text-primary)" }}>Include Private Commits</p>
+                <p style={{ color: "var(--text-muted)", fontSize: 12 }}>Count contributions from private repositories</p>
+              </div>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  aria-label="Include private commits in stats"
+                  checked={store.statsToggles?.includeAllCommits ?? true}
+                  onChange={(e) => store.setStatsToggles({ includeAllCommits: e.target.checked })}
+                />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+
+            {store.stats.showTopLanguages && (
+              <div>
+                <label className="form-label" htmlFor="languages-layout-select">Top Languages Layout</label>
+                <select
+                  id="languages-layout-select"
+                  className="form-select"
+                  value={store.statsToggles?.langsLayout || "compact"}
+                  onChange={(e) => store.setStatsToggles({ langsLayout: e.target.value as 'compact' | 'donut' })}
+                >
+                  <option value="compact">Compact List</option>
+                  <option value="donut">Donut Chart</option>
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="section-card">
         <p className="section-title">🎨 Themes</p>
@@ -1148,6 +1293,25 @@ function WorkflowsStep({ store }: StepProps) {
         </div>
       </div>
 
+      {/* Resume PDF Exporter Card */}
+      <div className="section-card" style={{ marginTop: 16 }}>
+        <p className="section-title">📄 One-Click Resume PDF Exporter</p>
+        <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 16 }}>
+          Generate a beautifully formatted, printer-friendly PDF copy of your profile. (Tip: works best with the <strong>Developer Resume</strong> layout!)
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            window.print();
+            toast.success("Opening system print dialog… 🖨️");
+          }}
+          className="btn-glow"
+          style={{ padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}
+        >
+          🖨️ Export PDF Resume
+        </button>
+      </div>
+
       {/* Bento Grid Row Reordering Controls */}
       {store.layoutPreset === "bento" && (
         <div className="section-card" style={{ marginTop: 16 }}>
@@ -1281,6 +1445,55 @@ function WorkflowsStep({ store }: StepProps) {
                 value={store.blogFeed.username}
                 onChange={(e) => store.setBlogFeed({ username: e.target.value })}
               />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Lanyard Discord & Spotify Status Widget */}
+      <div className="section-card" style={{ marginTop: 16 }}>
+        <p className="section-title">👾 Live Discord & Spotify Status (Lanyard)</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div>
+            <p style={{ fontWeight: 500, fontSize: 14 }}>Show Live Discord Status</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12 }}>Display your real-time Discord activity and Spotify track in your profile</p>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              aria-label="Toggle Lanyard Status Widget"
+              checked={store.lanyard?.show || false}
+              onChange={(e) => store.setLanyard({ show: e.target.checked })}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
+        {store.lanyard?.show && (
+          <div className="animate-fade-in" style={{ display: "grid", gap: 12 }}>
+            <div>
+              <label className="form-label" htmlFor="lanyard-userid-field">Discord User ID *</label>
+              <input
+                id="lanyard-userid-field"
+                className="form-input"
+                placeholder="e.g. 197825227749818368"
+                value={store.lanyard?.userId || ""}
+                onChange={(e) => store.setLanyard({ userId: e.target.value })}
+              />
+              <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>
+                Find your Discord ID: Settings &gt; Advanced &gt; Enable Developer Mode, then right-click your profile and choose &quot;Copy User ID&quot;.
+              </p>
+            </div>
+            <div>
+              <label className="form-label" htmlFor="lanyard-theme-select">Widget Theme</label>
+              <select
+                id="lanyard-theme-select"
+                className="form-select"
+                value={store.lanyard?.theme || "dark"}
+                onChange={(e) => store.setLanyard({ theme: e.target.value })}
+              >
+                <option value="dark">Dark Theme</option>
+                <option value="light">Light Theme</option>
+              </select>
             </div>
           </div>
         )}
@@ -1423,6 +1636,7 @@ jobs:
         {[
           { key: "showMeme", label: "Random Dev Meme", desc: "Auto-refreshing programming meme on every visit" },
           { key: "showQuote", label: "Dev Quote", desc: "Inspiring developer quote widget" },
+          { key: "showJoke", label: "Developer Joke Card", desc: "Themed programmer setup & punchline SVG card" },
         ].map((item) => (
           <div key={item.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid var(--border)" }}>
             <div>
@@ -1430,7 +1644,18 @@ jobs:
               <p style={{ color: "var(--text-muted)", fontSize: 12 }}>{item.desc}</p>
             </div>
             <label className="toggle-switch">
-              <input type="checkbox" aria-label={`Toggle ${item.label}`} checked={store.fun[item.key as keyof typeof store.fun] as boolean} onChange={(e) => store.setFun({ [item.key]: e.target.checked })} />
+              <input
+                type="checkbox"
+                aria-label={`Toggle ${item.label}`}
+                checked={item.key === "showJoke" ? (store.fun.showJoke || false) : (store.fun[item.key as keyof typeof store.fun] as boolean)}
+                onChange={(e) => {
+                  if (item.key === "showJoke") {
+                    store.setFun({ showJoke: e.target.checked });
+                  } else {
+                    store.setFun({ [item.key]: e.target.checked });
+                  }
+                }}
+              />
               <span className="toggle-slider" />
             </label>
           </div>
@@ -1439,7 +1664,17 @@ jobs:
           <div style={{ marginTop: 16 }}>
             <label className="form-label" htmlFor="quote-theme-select">Quote Theme</label>
             <select id="quote-theme-select" className="form-select" value={store.fun.quoteTheme} onChange={(e) => store.setFun({ quoteTheme: e.target.value })}>
-              {["dark", "radical", "merko", "gruvbox", "tokyonight", "onedark"].map((t) => (
+              {["light", "dark", "radical", "merko", "gruvbox", "tokyonight", "onedark"].map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {store.fun.showJoke && (
+          <div style={{ marginTop: 16 }}>
+            <label className="form-label" htmlFor="joke-theme-select">Developer Joke Theme</label>
+            <select id="joke-theme-select" className="form-select" value={store.fun.jokeTheme || "dark"} onChange={(e) => store.setFun({ jokeTheme: e.target.value })}>
+              {["light", "dark", "radical", "merko", "gruvbox", "tokyonight", "onedark"].map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>

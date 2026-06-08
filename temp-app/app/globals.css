@@ -875,6 +875,70 @@ input:checked + .toggle-slider::before {
   }
 }
 
+/* Printing styles for PDF Resume export */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  nav,
+  .form-panel,
+  .preview-panel > div:first-child,
+  .preview-panel > div:last-child,
+  .preview-panel > div:nth-child(2) > div:first-child {
+    display: none !important;
+  }
+  
+  .generator-container {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  .preview-panel {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  
+  .markdown-preview-card {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  .markdown-preview-card h1,
+  .markdown-preview-card h2,
+  .markdown-preview-card h3,
+  .markdown-preview-card p,
+  .markdown-preview-card li,
+  .markdown-preview-card td,
+  .markdown-preview-card th,
+  .markdown-preview-card a {
+    color: #000000 !important;
+  }
+  
+  .markdown-preview-card a {
+    text-decoration: underline !important;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+  
+  img {
+    page-break-inside: avoid;
+  }
+}
+
+
 
 
 

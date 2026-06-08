@@ -78,6 +78,8 @@ export interface Fun {
   showMeme: boolean;
   showQuote: boolean;
   quoteTheme: string;
+  showJoke: boolean;
+  jokeTheme: string;
 }
 
 export interface FormState {
@@ -142,10 +144,22 @@ export interface FormState {
     limit: number;
   };
   language: "en" | "es" | "hi";
+  statsToggles: {
+    hideRank: boolean;
+    showIcons: boolean;
+    includeAllCommits: boolean;
+    langsLayout: 'compact' | 'donut';
+  };
+  lanyard: {
+    show: boolean;
+    userId: string;
+    theme: string;
+  };
+  techProficiencies: Record<string, number>;
 }
 
 export interface FormActions {
-  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects" | "customTheme" | "bentoOrder" | "wakatime" | "blogFeed" | "language">, value: string) => void;
+  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects" | "customTheme" | "bentoOrder" | "wakatime" | "blogFeed" | "language" | "statsToggles" | "lanyard" | "techProficiencies">, value: string) => void;
   setSocial: (key: keyof Socials, value: string) => void;
   addCustomSocial: (name: string, url: string, color: string) => void;
   removeCustomSocial: (id: string) => void;
@@ -165,6 +179,9 @@ export interface FormActions {
   setWakaTime: (update: Partial<FormState["wakatime"]>) => void;
   setBlogFeed: (update: Partial<FormState["blogFeed"]>) => void;
   setLanguage: (lang: "en" | "es" | "hi") => void;
+  setStatsToggles: (update: Partial<FormState["statsToggles"]>) => void;
+  setLanyard: (update: Partial<FormState["lanyard"]>) => void;
+  setTechProficiency: (techId: string, level: number) => void;
   reset: () => void;
 }
 
@@ -219,6 +236,8 @@ const defaultState: FormState = {
     showMeme: false,
     showQuote: false,
     quoteTheme: "dark",
+    showJoke: false,
+    jokeTheme: "dark",
   },
   customTheme: {
     enabled: false,
@@ -241,6 +260,18 @@ const defaultState: FormState = {
     limit: 5,
   },
   language: "en",
+  statsToggles: {
+    hideRank: false,
+    showIcons: true,
+    includeAllCommits: true,
+    langsLayout: 'compact',
+  },
+  lanyard: {
+    show: false,
+    userId: "",
+    theme: "dark",
+  },
+  techProficiencies: {},
 };
 
 export const useFormStore = create<FormState & FormActions>((set) => ({
@@ -302,5 +333,10 @@ export const useFormStore = create<FormState & FormActions>((set) => ({
   setWakaTime: (update) => set((s) => ({ wakatime: { ...s.wakatime, ...update } })),
   setBlogFeed: (update) => set((s) => ({ blogFeed: { ...s.blogFeed, ...update } })),
   setLanguage: (lang) => set({ language: lang }),
+  setStatsToggles: (update) => set((s) => ({ statsToggles: { ...s.statsToggles, ...update } })),
+  setLanyard: (update) => set((s) => ({ lanyard: { ...s.lanyard, ...update } })),
+  setTechProficiency: (techId, level) => set((s) => ({
+    techProficiencies: { ...s.techProficiencies, [techId]: level }
+  })),
   reset: () => set(defaultState),
 }));
