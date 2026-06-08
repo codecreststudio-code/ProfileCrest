@@ -37,10 +37,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/Logo01.webp",
-        width: 800,
-        height: 800,
-        alt: "ProfileCrest Brand Logo",
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ProfileCrest OpenGraph Banner",
       }
     ]
   },
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ProfileCrest – Premium GitHub Profile README Generator",
     description: "Design an exceptional, custom GitHub Profile README with interactive Bento grids, 300+ animated tech badges, dynamic real-time stats cards, and modern custom widgets.",
-    images: ["/Logo01.webp"],
+    images: ["/og-image.png"],
   },
 };
 
@@ -60,6 +60,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://img.shields.io" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://github-readme-stats.vercel.app" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://streak-stats.demolab.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://github-profile-trophy.vercel.app" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://github-readme-activity-graph.vercel.app" crossOrigin="anonymous" />
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1950207410287535"
