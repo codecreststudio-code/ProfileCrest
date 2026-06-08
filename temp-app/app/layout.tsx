@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://profile-crest.vercel.app"),
@@ -65,11 +64,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://streak-stats.demolab.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://github-profile-trophy.vercel.app" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://github-readme-activity-graph.vercel.app" crossOrigin="anonymous" />
-        <Script
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1950207410287535"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body suppressHydrationWarning>{children}</body>
