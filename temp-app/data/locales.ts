@@ -83,6 +83,25 @@ export interface LocaleDictionary {
     localhostWarningDesc: string;
     emptyPreview: string;
     watermarkLabel: string;
+    badgeStyleLabel: string;
+    futureTechTitle: string;
+    futureTechDesc: string;
+    spotifyTitle: string;
+    spotifyShow: string;
+    spotifyTrack: string;
+    spotifyArtist: string;
+    spotifyUrl: string;
+    timelineTitle: string;
+    timelineShow: string;
+    timelineAddBtn: string;
+    timelineDateLabel: string;
+    timelineTitleLabel: string;
+    timelineDescLabel: string;
+    devPlatformsTitle: string;
+    devPlatformsShow: string;
+    devPlatformsLeetcode: string;
+    devPlatformsStackoverflow: string;
+    devPlatformsChess: string;
   };
 }
 
@@ -217,6 +236,25 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       localhostWarningDesc: "You are running locally on localhost. The self-hosted quote and random meme cards generated point to your local URL (http://localhost:3000). GitHub's proxy servers cannot access localhost, so these two images will appear broken on your real GitHub profile README. To fix this: Deploy your ProfileCrest generator repository to Vercel (or any host) first, and copy the final markdown from your deployed website!",
       emptyPreview: "Fill in the form to see your README preview here",
       watermarkLabel: "Include ProfileCrest watermark backlink (helps other developers discover the tool)",
+      badgeStyleLabel: "Technology Badge Style",
+      futureTechTitle: "Future Focus (Skills I am Learning)",
+      futureTechDesc: "Select technologies you plan to learn or focus on in the future. These will be compiled as a separate, clean section.",
+      spotifyTitle: "🎵 Spotify - Currently Playing Card",
+      spotifyShow: "Show Spotify Track",
+      spotifyTrack: "Track Name",
+      spotifyArtist: "Artist Name",
+      spotifyUrl: "Spotify URL (Optional)",
+      timelineTitle: "📅 Career & Project Timeline",
+      timelineShow: "Show Career Timeline",
+      timelineAddBtn: "➕ Add Timeline Event",
+      timelineDateLabel: "Date / Year",
+      timelineTitleLabel: "Event Title",
+      timelineDescLabel: "Event Description",
+      devPlatformsTitle: "🏆 Developer Platform Profiles",
+      devPlatformsShow: "Show Platform Profiles",
+      devPlatformsLeetcode: "LeetCode Username",
+      devPlatformsStackoverflow: "StackOverflow User ID",
+      devPlatformsChess: "Chess.com Username",
     },
   },
   es: {
@@ -349,6 +387,25 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       localhostWarningDesc: "Estás ejecutando localmente en localhost. Las tarjetas autohospedadas de citas y memes generadas apuntan a tu URL local (http://localhost:3000). Los servidores proxy de GitHub no pueden acceder a localhost, por lo que estas dos imágenes aparecerán rotas en tu README real. Para solucionarlo: ¡Despliega tu repositorio del generador a Vercel primero y copia el markdown de tu sitio web desplegado!",
       emptyPreview: "Completa el formulario para ver la vista previa de tu README aquí",
       watermarkLabel: "Incluir enlace de marca de agua de ProfileCrest (ayuda a otros desarrolladores a descubrir la herramienta)",
+      badgeStyleLabel: "Estilo de Insignia Tecnológica",
+      futureTechTitle: "Enfoque Futuro (Tecnologías que estoy Aprendiendo)",
+      futureTechDesc: "Selecciona las tecnologías que planeas aprender o en las que te enfocarás en el futuro. Se compilarán en una sección limpia y separada.",
+      spotifyTitle: "🎵 Spotify - Tarjeta de Reproducción Actual",
+      spotifyShow: "Mostrar Pista de Spotify",
+      spotifyTrack: "Nombre de la Pista",
+      spotifyArtist: "Nombre del Artista",
+      spotifyUrl: "URL de Spotify (Opcional)",
+      timelineTitle: "📅 Línea de Tiempo de Carrera y Proyectos",
+      timelineShow: "Mostrar Línea de Tiempo",
+      timelineAddBtn: "➕ Agregar Evento a la Línea de Tiempo",
+      timelineDateLabel: "Fecha / Año",
+      timelineTitleLabel: "Título del Evento",
+      timelineDescLabel: "Descripción del Evento",
+      devPlatformsTitle: "🏆 Perfiles de Plataformas de Desarrollo",
+      devPlatformsShow: "Mostrar Perfiles de Plataforma",
+      devPlatformsLeetcode: "Usuario de LeetCode",
+      devPlatformsStackoverflow: "ID de Usuario de StackOverflow",
+      devPlatformsChess: "Usuario de Chess.com",
     },
   },
   hi: {
@@ -481,6 +538,25 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       localhostWarningDesc: "आप लोकलहोस्ट पर स्थानीय रूप से चल रहे हैं। जेनरेट किए गए सेल्फ-होस्टेड कोट और रैंडम मीम कार्ड आपके स्थानीय यूआरएल (http://localhost:3000) की ओर इशारा करते हैं। गिटहब के प्रॉक्सी सर्वर लोकलहोस्ट तक नहीं पहुंच सकते हैं, इसलिए ये दो छवियां आपके वास्तविक गिटहब प्रोफाइल README पर टूटी हुई दिखाई देंगी। इसे ठीक करने के लिए: पहले अपने प्रोफाइलक्रेस्ट जेनरेटर रिपॉजिटरी को वर्सेल (या किसी होस्ट) पर डिप्लॉय करें, और आपकी डिप्लॉय की गई वेबसाइट से अंतिम मार्कडाउन कॉपी करें!",
       emptyPreview: "यहाँ अपना README पूर्वावलोकन देखने के लिए फ़ॉर्म भरें",
       watermarkLabel: "प्रोफ़ाइलक्रेस्ट वॉटरमार्क बैकलिंक शामिल करें (अन्य डेवलपर्स को टूल खोजने में मदद करता है)",
+      badgeStyleLabel: "तकनीकी बैज शैली",
+      futureTechTitle: "भविष्य का फोकस (तकनीक जो मैं सीख रहा हूँ)",
+      futureTechDesc: "उन तकनीकों का चयन करें जिन्हें आप भविष्य में सीखने या ध्यान केंद्रित करने की योजना बना रहे हैं। इन्हें एक अलग, स्वच्छ अनुभाग के रूप में संकलित किया जाएगा।",
+      spotifyTitle: "🎵 स्पॉटिफ़ाई - वर्तमान में चल रहा गाना",
+      spotifyShow: "स्पॉटिफ़ाई ट्रैक दिखाएं",
+      spotifyTrack: "गाने का नाम",
+      spotifyArtist: "कलाकार का नाम",
+      spotifyUrl: "स्पॉटिफ़ाई यूआरएल (वैकल्पिक)",
+      timelineTitle: "📅 करियर और प्रोजेक्ट समयरेखा",
+      timelineShow: "करियर समयरेखा दिखाएं",
+      timelineAddBtn: "➕ समयरेखा कार्यक्रम जोड़ें",
+      timelineDateLabel: "तिथि / वर्ष",
+      timelineTitleLabel: "कार्यक्रम का शीर्षक",
+      timelineDescLabel: "कार्यक्रम का विवरण",
+      devPlatformsTitle: "🏆 डेवलपर प्लेटफ़ॉर्म प्रोफ़ाइल",
+      devPlatformsShow: "प्लेटफ़ॉर्म प्रोफ़ाइल दिखाएं",
+      devPlatformsLeetcode: "लीटकोड यूजरनेम",
+      devPlatformsStackoverflow: "स्टैकओवरफ़्लो यूजर आईडी",
+      devPlatformsChess: "Chess.com यूजरनेम",
     },
   },
 };

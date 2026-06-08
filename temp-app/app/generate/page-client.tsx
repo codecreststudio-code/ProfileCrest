@@ -414,6 +414,7 @@ function BasicInfoStep({ store }: StepProps) {
   const [showcaseDesc, setShowcaseDesc] = useState("");
   const [showcaseUrl, setShowcaseUrl] = useState("");
   const [showcaseTags, setShowcaseTags] = useState("");
+  const [fetchedRepos, setFetchedRepos] = useState<{ name: string; description: string; url: string; language: string; }[]>([]);
 
   const labelTheme = language === "hi" ? "दृश्य थीम प्रीसेट" : language === "es" ? "Preajuste de Tema Visual" : "Visual Theme Preset";
   const labelUsername = language === "hi" ? "गिटहब यूजरनेम" : language === "es" ? "Usuario de GitHub" : "GitHub Username";
@@ -499,6 +500,67 @@ function BasicInfoStep({ store }: StepProps) {
         <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 16 }}>
           Feature your best repositories or personal projects inside your README!
         </p>
+
+        <div style={{ marginBottom: 16, borderBottom: "1px solid var(--border)", paddingBottom: 16 }}>
+          <button
+            type="button"
+            disabled={!store.username}
+            onClick={async () => {
+              if (!store.username) {
+                toast.error("Please enter your GitHub Username first!");
+                return;
+              }
+              const fetchToast = toast.loading("Fetching public repositories from GitHub...");
+              try {
+                const res = await fetch(`https://api.github.com/users/${store.username}/repos?sort=updated&per_page=30`);
+                if (!res.ok) throw new Error("User not found or rate limited");
+                const data = await res.json();
+                setFetchedRepos(data.map((r: { name: string; description: string | null; html_url: string; language: string | null }) => ({
+                  name: r.name,
+                  description: r.description || "",
+                  url: r.html_url,
+                  language: r.language || ""
+                })));
+                toast.success("Successfully loaded public repositories! 📁", { id: fetchToast });
+              } catch {
+                toast.error("Failed to load repositories. Verify username or try again later.", { id: fetchToast });
+              }
+            }}
+            className="btn-glow"
+            style={{ padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "none", cursor: store.username ? "pointer" : "not-allowed", opacity: store.username ? 1 : 0.6 }}
+          >
+            ⚡ Auto-Fetch GitHub Repositories
+          </button>
+
+          {fetchedRepos.length > 0 && (
+            <div style={{ marginTop: 12, maxHeight: 200, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--bg-secondary)" }}>
+              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Select repos to import as showcase project cards:</p>
+              <div style={{ display: "grid", gap: 8 }}>
+                {fetchedRepos.map((repo) => (
+                  <div key={repo.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 8px", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 6 }}>
+                    <div style={{ overflow: "hidden", textOverflow: "ellipsis", marginRight: 8 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: "var(--accent)" }}>{repo.name}</p>
+                      <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{repo.description || "No description"}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        store.addShowcaseProject(repo.name, repo.description, repo.url, repo.language);
+                        setFetchedRepos(prev => prev.filter(r => r.name !== repo.name));
+                        toast.success(`Imported ${repo.name}! 🎉`);
+                      }}
+                      className="btn-glow"
+                      style={{ padding: "4px 8px", fontSize: 11, borderRadius: 4, cursor: "pointer", border: "none", flexShrink: 0 }}
+                    >
+                      Import
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div style={{ display: "grid", gap: 12 }}>
           <input
             className="form-input"
@@ -691,6 +753,7 @@ function SocialsStep({ store }: StepProps) {
 }
 
 function TechStackStep({ store }: StepProps) {
+  const t = locales[store.language] || locales.en;
   const [techSearch, setTechSearch] = useState("");
   const [techCategory, setTechCategory] = useState("All");
   const [customTechName, setCustomTechName] = useState("");
@@ -706,6 +769,23 @@ function TechStackStep({ store }: StepProps) {
     <div className="animate-fade-in-up">
       <div className="section-card">
         <p className="section-title">💻 Tech Stack ({store.techStack.length + store.customTech.length} selected)</p>
+
+        {/* Dynamic Badge Style Selector */}
+        <div style={{ marginBottom: 16 }}>
+          <label className="form-label" htmlFor="badge-style-select">✨ {t.generator.badgeStyleLabel}</label>
+          <select
+            id="badge-style-select"
+            className="form-select"
+            value={store.badgeStyle}
+            onChange={(e) => store.setBadgeStyle(e.target.value as FormState["badgeStyle"])}
+          >
+            <option value="for-the-badge">For the Badge (Large Rounded)</option>
+            <option value="flat">Flat (Modern Sleek)</option>
+            <option value="flat-square">Flat Square (Classic Sharp)</option>
+            <option value="plastic">Plastic (Retro Embossed)</option>
+            <option value="social">Social (Minimalist Outline)</option>
+          </select>
+        </div>
 
         {/* Selected chips */}
         {(store.techStack.length > 0 || store.customTech.length > 0) && (
@@ -871,12 +951,53 @@ function TechStackStep({ store }: StepProps) {
             </button>
           </div>
         </div>
+
+        {/* Future Focus Section */}
+        <div style={{ marginTop: 24, borderTop: "1px solid var(--border)", paddingTop: 20 }}>
+          <p style={{ fontWeight: 600, fontSize: 14, color: "var(--accent)", marginBottom: 8 }}>🚀 {t.generator.futureTechTitle}</p>
+          <p style={{ color: "var(--text-muted)", fontSize: 12, marginBottom: 14 }}>{t.generator.futureTechDesc}</p>
+          
+          {store.futureTech.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+              {store.futureTech.map((id) => {
+                const techItem = techStack.find((x) => x.id === id);
+                return techItem ? (
+                  <span key={id} className="selected-chip" style={{ background: "rgba(93, 184, 166, 0.08)", borderColor: "rgba(93, 184, 166, 0.25)", color: "#3d8b7a" }}>
+                    {techItem.name}
+                    <button type="button" onClick={() => store.toggleFutureTech(id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3d8b7a", marginLeft: 6 }}>×</button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
+
+          <div style={{ maxHeight: 200, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--bg-secondary)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 6 }}>
+              {techStack
+                .filter((tItem) => !store.techStack.includes(tItem.id)) // Exclude currently active tech skills
+                .map((tItem) => (
+                  <button
+                    type="button"
+                    key={tItem.id}
+                    onClick={() => store.toggleFutureTech(tItem.id)}
+                    className={`tech-badge ${store.futureTech.includes(tItem.id) ? "selected" : ""}`}
+                    style={{ fontSize: 11, padding: "4px 8px" }}
+                  >
+                    {store.futureTech.includes(tItem.id) ? "✓ " : "+ "}
+                    {tItem.name}
+                  </button>
+                ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 function GitHubStatsStep({ store }: StepProps) {
+  const { language } = store;
+  const t = locales[language] || locales.en;
   const isPresetActive = store.themePreset !== "default";
   
   return (
@@ -1180,6 +1301,60 @@ function GitHubStatsStep({ store }: StepProps) {
           )}
         </div>
       </div>
+
+      {/* Developer Platform Profiles Card */}
+      <div className="section-card" style={{ marginTop: 16 }}>
+        <p className="section-title">{t.generator.devPlatformsTitle}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div>
+            <p style={{ fontWeight: 500, fontSize: 14 }}>{t.generator.devPlatformsShow}</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12 }}>Display statistics from LeetCode, StackOverflow, and Chess.com</p>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              aria-label="Toggle Dev Platforms"
+              checked={store.devPlatforms.show}
+              onChange={(e) => store.setDevPlatforms({ show: e.target.checked })}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
+        {store.devPlatforms.show && (
+          <div className="animate-fade-in" style={{ display: "grid", gap: 12 }}>
+            <div>
+              <label className="form-label" htmlFor="dev-platforms-leetcode">{t.generator.devPlatformsLeetcode}</label>
+              <input
+                id="dev-platforms-leetcode"
+                className="form-input"
+                placeholder="e.g. leetcode_user"
+                value={store.devPlatforms.leetcode}
+                onChange={(e) => store.setDevPlatforms({ leetcode: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="dev-platforms-stackoverflow">{t.generator.devPlatformsStackoverflow}</label>
+              <input
+                id="dev-platforms-stackoverflow"
+                className="form-input"
+                placeholder="e.g. 1234567"
+                value={store.devPlatforms.stackoverflow}
+                onChange={(e) => store.setDevPlatforms({ stackoverflow: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="dev-platforms-chess">{t.generator.devPlatformsChess}</label>
+              <input
+                id="dev-platforms-chess"
+                className="form-input"
+                placeholder="e.g. chess_user"
+                value={store.devPlatforms.chess}
+                onChange={(e) => store.setDevPlatforms({ chess: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1263,6 +1438,9 @@ function DonationsStep({ store }: StepProps) {
 function WorkflowsStep({ store }: StepProps) {
   const { language } = store;
   const t = locales[language] || locales.en;
+  const [timelineDate, setTimelineDate] = useState("");
+  const [timelineTitle, setTimelineTitle] = useState("");
+  const [timelineDesc, setTimelineDesc] = useState("");
 
   const moveItem = (index: number, direction: "up" | "down") => {
     const newOrder = [...store.bentoOrder];
@@ -1510,6 +1688,151 @@ function WorkflowsStep({ store }: StepProps) {
                 <option value="light">Light Theme</option>
               </select>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Spotify Currently Playing Config Form Card */}
+      <div className="section-card" style={{ marginTop: 16 }}>
+        <p className="section-title">{t.generator.spotifyTitle}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div>
+            <p style={{ fontWeight: 500, fontSize: 14 }}>{t.generator.spotifyShow}</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12 }}>Display a Shields.io Spotify playing badge in your profile</p>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              aria-label="Toggle Spotify Widget"
+              checked={store.spotify.show}
+              onChange={(e) => store.setSpotify({ show: e.target.checked })}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
+        {store.spotify.show && (
+          <div className="animate-fade-in" style={{ display: "grid", gap: 12 }}>
+            <div>
+              <label className="form-label" htmlFor="spotify-track-input">{t.generator.spotifyTrack} *</label>
+              <input
+                id="spotify-track-input"
+                className="form-input"
+                placeholder="e.g. Bohemian Rhapsody"
+                value={store.spotify.trackName}
+                onChange={(e) => store.setSpotify({ trackName: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="spotify-artist-input">{t.generator.spotifyArtist}</label>
+              <input
+                id="spotify-artist-input"
+                className="form-input"
+                placeholder="e.g. Queen"
+                value={store.spotify.artistName}
+                onChange={(e) => store.setSpotify({ artistName: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="spotify-url-input">{t.generator.spotifyUrl}</label>
+              <input
+                id="spotify-url-input"
+                className="form-input"
+                placeholder="e.g. https://open.spotify.com/track/..."
+                value={store.spotify.spotifyUrl}
+                onChange={(e) => store.setSpotify({ spotifyUrl: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Career Timeline Node Editor Card */}
+      <div className="section-card" style={{ marginTop: 16 }}>
+        <p className="section-title">{t.generator.timelineTitle}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div>
+            <p style={{ fontWeight: 500, fontSize: 14 }}>{t.generator.timelineShow}</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12 }}>Display a career/project milestone table in your profile</p>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              aria-label="Toggle Career Timeline"
+              checked={store.timeline.show}
+              onChange={(e) => store.setTimeline({ show: e.target.checked })}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
+        {store.timeline.show && (
+          <div className="animate-fade-in" style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "grid", gap: 10, borderBottom: "1px solid var(--border)", paddingBottom: 16 }}>
+              <div>
+                <label className="form-label" htmlFor="timeline-date-input">{t.generator.timelineDateLabel}</label>
+                <input
+                  id="timeline-date-input"
+                  className="form-input"
+                  placeholder="e.g. 2024 - Present or Jan 2026"
+                  value={timelineDate}
+                  onChange={(e) => setTimelineDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="form-label" htmlFor="timeline-title-input">{t.generator.timelineTitleLabel}</label>
+                <input
+                  id="timeline-title-input"
+                  className="form-input"
+                  placeholder="e.g. Senior Software Engineer"
+                  value={timelineTitle}
+                  onChange={(e) => setTimelineTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="form-label" htmlFor="timeline-desc-input">{t.generator.timelineDescLabel}</label>
+                <input
+                  id="timeline-desc-input"
+                  className="form-input"
+                  placeholder="e.g. Leading the frontend platform transition..."
+                  value={timelineDesc}
+                  onChange={(e) => setTimelineDesc(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (timelineDate.trim() && timelineTitle.trim()) {
+                    store.addTimelineItem(timelineDate.trim(), timelineTitle.trim(), timelineDesc.trim());
+                    setTimelineDate("");
+                    setTimelineTitle("");
+                    setTimelineDesc("");
+                    toast.success("Timeline event added! 📅");
+                  } else {
+                    toast.error("Please enter a Date and Event Title!");
+                  }
+                }}
+                className="btn-glow"
+                style={{ padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", width: "fit-content" }}
+              >
+                {t.generator.timelineAddBtn}
+              </button>
+            </div>
+
+            {store.timeline.items && store.timeline.items.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>Current Timeline Events:</p>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {store.timeline.items.map((item) => (
+                    <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px" }}>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)" }}>{item.date}: {item.title}</p>
+                        {item.description && <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>{item.description}</p>}
+                      </div>
+                      <button type="button" onClick={() => store.removeTimelineItem(item.id)} style={{ background: "none", border: "none", color: "red", fontSize: 18, cursor: "pointer" }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

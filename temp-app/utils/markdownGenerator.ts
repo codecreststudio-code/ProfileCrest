@@ -75,6 +75,7 @@ function buildAboutHtml(f: FormState): string {
 }
 
 function buildSocialBadges(f: FormState, usePresetColor: boolean, presetBadgeColor: string | null): string {
+  const style = f.badgeStyle || "for-the-badge";
   const socialBadges = socialLinks.flatMap((s) => {
     const handle = f.socials[s.id as keyof typeof f.socials];
     if (!handle) return [];
@@ -82,14 +83,14 @@ function buildSocialBadges(f: FormState, usePresetColor: boolean, presetBadgeCol
     const color = f.customTheme.enabled 
       ? f.customTheme.badgeColor.replace("#", "") 
       : (usePresetColor && presetBadgeColor ? presetBadgeColor : s.color);
-    return [`<a href="${url}" target="_blank"><img src="https://img.shields.io/badge/${encode(s.name)}-${color}?style=for-the-badge&logo=${s.logo}&logoColor=white" alt="${s.name}" /></a>`];
+    return [`<a href="${url}" target="_blank"><img src="https://img.shields.io/badge/${encode(s.name)}-${color}?style=${style}&logo=${s.logo}&logoColor=white" alt="${s.name}" /></a>`];
   });
 
   const customSocialBadges = (f.customSocials || []).map((cs) => {
     const color = f.customTheme.enabled 
       ? f.customTheme.badgeColor.replace("#", "") 
       : (usePresetColor && presetBadgeColor ? presetBadgeColor : cs.color);
-    return `<a href="${cs.url}" target="_blank"><img src="https://img.shields.io/badge/${encode(cs.name)}-${color}?style=for-the-badge" alt="${cs.name}" /></a>`;
+    return `<a href="${cs.url}" target="_blank"><img src="https://img.shields.io/badge/${encode(cs.name)}-${color}?style=${style}" alt="${cs.name}" /></a>`;
   });
 
   const allSocialBadges = [...socialBadges, ...customSocialBadges];
@@ -97,13 +98,14 @@ function buildSocialBadges(f: FormState, usePresetColor: boolean, presetBadgeCol
 }
 
 function buildTechBadges(f: FormState, usePresetColor: boolean, presetBadgeColor: string | null): string {
+  const style = f.badgeStyle || "for-the-badge";
   const badges = f.techStack.flatMap((id) => {
     const t = techStack.find((item) => item.id === id);
     if (!t) return [];
     const color = f.customTheme.enabled 
       ? f.customTheme.badgeColor.replace("#", "") 
       : (usePresetColor && presetBadgeColor ? presetBadgeColor : t.color);
-    const mainBadge = `<img src="https://img.shields.io/badge/${encode(t.name)}-${color}.svg?style=for-the-badge&logo=${t.slug}&logoColor=white" alt="${t.name}"/>`;
+    const mainBadge = `<img src="https://img.shields.io/badge/${encode(t.name)}-${color}.svg?style=${style}&logo=${t.slug}&logoColor=white" alt="${t.name}"/>`;
     
     const proficiency = f.techProficiencies ? f.techProficiencies[id] : undefined;
     if (proficiency && proficiency > 0) {
@@ -118,7 +120,7 @@ function buildTechBadges(f: FormState, usePresetColor: boolean, presetBadgeColor
     const color = f.customTheme.enabled 
       ? f.customTheme.badgeColor.replace("#", "") 
       : (usePresetColor && presetBadgeColor ? presetBadgeColor : ct.color);
-    const mainBadge = `<img src="https://img.shields.io/badge/${encode(ct.name)}-${color}.svg?style=for-the-badge" alt="${ct.name}"/>`;
+    const mainBadge = `<img src="https://img.shields.io/badge/${encode(ct.name)}-${color}.svg?style=${style}" alt="${ct.name}"/>`;
     
     const proficiency = f.techProficiencies ? f.techProficiencies[ct.id] : undefined;
     if (proficiency && proficiency > 0) {
@@ -133,6 +135,7 @@ function buildTechBadges(f: FormState, usePresetColor: boolean, presetBadgeColor
 }
 
 function buildDonationBadges(f: FormState): string {
+  const style = f.badgeStyle || "for-the-badge";
   return donationLinks
     .flatMap((d) => {
       const handle = f.donations[d.id as keyof typeof f.donations];
@@ -141,9 +144,63 @@ function buildDonationBadges(f: FormState): string {
       const color = f.customTheme.enabled 
         ? f.customTheme.badgeColor.replace("#", "") 
         : d.color;
-      return [`<a href="${url}"><img src="https://img.shields.io/badge/${encode(d.name)}-${color}?style=for-the-badge&logo=${d.logo}&logoColor=white" alt="${d.name}"/></a>`];
+      return [`<a href="${url}"><img src="https://img.shields.io/badge/${encode(d.name)}-${color}?style=${style}&logo=${d.logo}&logoColor=white" alt="${d.name}"/></a>`];
     })
     .join("\n");
+}
+
+function buildFutureTechBadges(f: FormState, usePresetColor: boolean, presetBadgeColor: string | null): string {
+  if (!f.futureTech || f.futureTech.length === 0) return "";
+  const style = f.badgeStyle || "for-the-badge";
+  const badges = f.futureTech.flatMap((id) => {
+    const t = techStack.find((item) => item.id === id);
+    if (!t) return [];
+    const color = f.customTheme.enabled 
+      ? f.customTheme.badgeColor.replace("#", "") 
+      : (usePresetColor && presetBadgeColor ? presetBadgeColor : t.color);
+    return [`<img src="https://img.shields.io/badge/${encode(t.name)}-${color}.svg?style=${style}&logo=${t.slug}&logoColor=white" alt="${t.name}"/>`];
+  });
+  return badges.join("\n");
+}
+
+function buildSpotifyCard(f: FormState): string {
+  if (!f.spotify || !f.spotify.show || !f.spotify.trackName) return "";
+  const track = encode(f.spotify.trackName);
+  const artist = encode(f.spotify.artistName || "Unknown Artist");
+  const link = f.spotify.spotifyUrl || "https://open.spotify.com";
+  return `<p align="left">\n  <a href="${link}" target="_blank">\n    <img src="https://img.shields.io/badge/Playing%20on%20Spotify-${track}%20--%20${artist}-1DB954?style=for-the-badge&logo=spotify&logoColor=white" alt="Spotify Currently Playing" />\n  </a>\n</p>`;
+}
+
+function buildTimeline(f: FormState): string {
+  if (!f.timeline || !f.timeline.show || !f.timeline.items || f.timeline.items.length === 0) return "";
+  let md = "\n| Period | Event | Description |\n";
+  md += "| :--- | :--- | :--- |\n";
+  f.timeline.items.forEach((item) => {
+    const date = item.date || "";
+    const title = item.title || "";
+    const desc = item.description || "";
+    md += `| **${date}** | ${title} | ${desc} |\n`;
+  });
+  return md;
+}
+
+function buildDevPlatforms(f: FormState): string {
+  if (!f.devPlatforms || !f.devPlatforms.show) return "";
+  const parts: string[] = [];
+  const theme = f.themePreset === "default" ? "tokyonight" : f.themePreset;
+  
+  if (f.devPlatforms.leetcode) {
+    parts.push(`<a href="https://leetcode.com/${f.devPlatforms.leetcode}" target="_blank"><img src="https://github-readme-leetcode.vercel.app/api?username=${f.devPlatforms.leetcode}&theme=${theme}" alt="LeetCode Status" /></a>`);
+  }
+  if (f.devPlatforms.stackoverflow) {
+    parts.push(`<a href="https://stackoverflow.com/users/${f.devPlatforms.stackoverflow}" target="_blank"><img src="https://stackexchange-readme-profile.vercel.app/api?user=${f.devPlatforms.stackoverflow}" alt="StackOverflow Profile" /></a>`);
+  }
+  if (f.devPlatforms.chess) {
+    parts.push(`<a href="https://chess.com/member/${f.devPlatforms.chess}" target="_blank"><img src="https://chess-readme-stats.vercel.app/api?username=${f.devPlatforms.chess}&theme=${theme}" alt="Chess.com Profile" /></a>`);
+  }
+  
+  if (parts.length === 0) return "";
+  return `<p align="left">\n${parts.join("\n")}\n</p>`;
 }
 
 function buildShowcaseContent(f: FormState): string {
@@ -255,16 +312,23 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
         md += `  </tr>\n`;
       } else if (blockId === "tech") {
         const techBadges = buildTechBadges(f, usePresetColor || useCustom, badgeColor);
-        if (techBadges) {
+        const futureTechBadges = buildFutureTechBadges(f, usePresetColor || useCustom, badgeColor);
+        if (techBadges || futureTechBadges) {
           md += `  <tr>\n`;
           md += `    <td colspan="2" valign="top">\n`;
           md += `      <h3>💻 Languages and Tools</h3>\n`;
-          md += `      <p align="left">\n${techBadges}\n</p>\n`;
+          if (techBadges) {
+            md += `      <p align="left">\n${techBadges}\n</p>\n`;
+          }
+          if (futureTechBadges) {
+            md += `      <h4>🚀 Future Focus (Skills I am learning):</h4>\n`;
+            md += `      <p align="left">\n${futureTechBadges}\n</p>\n`;
+          }
           md += `    </td>\n`;
           md += `  </tr>\n`;
         }
       } else if (blockId === "achievements") {
-        if (f.username && (f.stats.showTrophies || f.stats.showStreak || f.wakatime.show)) {
+        if (f.username && (f.stats.showTrophies || f.stats.showStreak || f.wakatime.show || f.devPlatforms?.show)) {
           md += `  <tr>\n`;
           md += `    <td colspan="2" valign="top">\n`;
           md += `      <h3>🏆 Achievements, streaks & velocity</h3>\n`;
@@ -279,17 +343,28 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
           if (f.wakatime.show && f.wakatime.username) {
             md += `        ${buildWakaTime(f, useCustom, statsTheme)}<br/><br/>\n`;
           }
+          const devPlat = buildDevPlatforms(f);
+          if (devPlat) {
+            md += `      </p>\n      <h4>🏆 Coding Profiles</h4>\n      ${devPlat}\n      <p>\n`;
+          }
           md += `      </p>\n`;
           md += `    </td>\n`;
           md += `  </tr>\n`;
         }
       } else if (blockId === "showcase") {
         const showcaseStr = buildShowcaseContent(f);
-        if (showcaseStr) {
+        const timelineStr = buildTimeline(f);
+        if (showcaseStr || timelineStr) {
           md += `  <tr>\n`;
           md += `    <td colspan="2" valign="top">\n`;
-          md += `      <h3>📁 Featured Projects</h3>\n`;
-          md += showcaseStr;
+          if (showcaseStr) {
+            md += `      <h3>📁 Featured Projects</h3>\n`;
+            md += showcaseStr;
+          }
+          if (timelineStr) {
+            md += `      <h3>📅 Career & Project Timeline</h3>\n`;
+            md += timelineStr;
+          }
           md += `    </td>\n`;
           md += `  </tr>\n`;
         }
@@ -305,6 +380,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
             if (f.lanyard && f.lanyard.show && f.lanyard.userId) {
               const themeQuery = f.lanyard.theme ? `?theme=${f.lanyard.theme}` : "";
               md += `      <p align="left">\n        <a href="https://discord.com/users/${f.lanyard.userId}" target="_blank">\n          <img src="https://lanyard.vercel.app/api/${f.lanyard.userId}${themeQuery}" alt="Discord Status" width="100%" />\n        </a>\n      </p>\n`;
+            }
+            const spotifyStr = buildSpotifyCard(f);
+            if (spotifyStr) {
+              md += `      <h4>🎵 Currently Playing</h4>\n      ${spotifyStr}\n`;
             }
           }
           md += `    </td>\n`;
@@ -376,11 +455,19 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     if (techBadges) {
       md += `## 💻 Core Technologies\n<p align="left">\n${techBadges}\n</p>\n\n`;
     }
+    const futureTech = buildFutureTechBadges(f, usePresetColor || useCustom, badgeColor);
+    if (futureTech) {
+      md += `### 🚀 Future Focus\n<p align="left">\n${futureTech}\n</p>\n\n`;
+    }
 
     // Featured Highlights
     const showcaseStr = buildShowcaseContent(f);
     if (showcaseStr) {
       md += `## 📁 Highlighted Projects\n${showcaseStr}\n`;
+    }
+    const timelineStr = buildTimeline(f);
+    if (timelineStr) {
+      md += `## 📅 Experience & Project Timeline\n${timelineStr}\n\n`;
     }
 
     // Professional Connections
@@ -390,6 +477,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       if (f.lanyard && f.lanyard.show && f.lanyard.userId) {
         const themeQuery = f.lanyard.theme ? `?theme=${f.lanyard.theme}` : "";
         md += `<p align="left">\n  <a href="https://discord.com/users/${f.lanyard.userId}" target="_blank">\n    <img src="https://lanyard.vercel.app/api/${f.lanyard.userId}${themeQuery}" alt="Discord Status" />\n  </a>\n</p>\n\n`;
+      }
+      const spotifyStr = buildSpotifyCard(f);
+      if (spotifyStr) {
+        md += `### 🎵 Currently Playing\n${spotifyStr}\n\n`;
       }
     }
 
@@ -409,6 +500,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
         md += `  ${buildWakaTime(f, useCustom, statsTheme)}<br/><br/>\n`;
       }
       md += `</p>\n`;
+    }
+    const devPlat = buildDevPlatforms(f);
+    if (devPlat) {
+      md += `## 🏆 Coding Profiles\n${devPlat}\n\n`;
     }
 
     // Blog RSS Feed
@@ -482,6 +577,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       const themeQuery = f.lanyard.theme ? `?theme=${f.lanyard.theme}` : "";
       md += `\n<p align="left">\n  <a href="https://discord.com/users/${f.lanyard.userId}" target="_blank">\n    <img src="https://lanyard.vercel.app/api/${f.lanyard.userId}${themeQuery}" alt="Discord Status" />\n  </a>\n</p>\n`;
     }
+    const spotifyStr = buildSpotifyCard(f);
+    if (spotifyStr) {
+      md += `\n<h4 align="left">Currently Playing:</h4>\n${spotifyStr}\n`;
+    }
   }
 
   // Tech stack
@@ -489,11 +588,19 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
   if (techBadges) {
     md += `\n<h3 align="left">Languages and Tools:</h3>\n<p align="left">\n${techBadges}\n</p>\n`;
   }
+  const futureTech = buildFutureTechBadges(f, usePresetColor || useCustom, badgeColor);
+  if (futureTech) {
+    md += `\n<h4 align="left">Future Focus (Skills I am learning):</h4>\n<p align="left">\n${futureTech}\n</p>\n`;
+  }
 
   // Highlights
   const showcaseStr = buildShowcaseContent(f);
   if (showcaseStr) {
     md += `\n<h3 align="left">Featured Projects:</h3>\n${showcaseStr}\n`;
+  }
+  const timelineStr = buildTimeline(f);
+  if (timelineStr) {
+    md += `\n<h3 align="left">Career & Project Timeline:</h3>\n${timelineStr}\n`;
   }
 
   // GitHub Stats
@@ -514,6 +621,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += `<img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&${query}&hide_border=false&cache_seconds=86400" alt="GitHub Streak" /><br/>\n`;
     }
     md += `</p>\n`;
+  }
+  const devPlat = buildDevPlatforms(f);
+  if (devPlat) {
+    md += `\n<h3 align="left">Coding Profiles:</h3>\n${devPlat}\n`;
   }
 
   // Activity Graph

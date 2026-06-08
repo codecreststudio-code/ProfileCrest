@@ -157,10 +157,28 @@ export interface FormState {
   };
   techProficiencies: Record<string, number>;
   includeWatermark: boolean;
+  badgeStyle: 'for-the-badge' | 'flat' | 'flat-square' | 'plastic' | 'social';
+  futureTech: string[];
+  spotify: {
+    show: boolean;
+    trackName: string;
+    artistName: string;
+    spotifyUrl: string;
+  };
+  timeline: {
+    show: boolean;
+    items: { id: string; date: string; title: string; description: string; }[];
+  };
+  devPlatforms: {
+    show: boolean;
+    leetcode: string;
+    stackoverflow: string;
+    chess: string;
+  };
 }
 
 export interface FormActions {
-  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects" | "customTheme" | "bentoOrder" | "wakatime" | "blogFeed" | "language" | "statsToggles" | "lanyard" | "techProficiencies" | "includeWatermark">, value: string) => void;
+  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects" | "customTheme" | "bentoOrder" | "wakatime" | "blogFeed" | "language" | "statsToggles" | "lanyard" | "techProficiencies" | "includeWatermark" | "futureTech" | "spotify" | "timeline" | "devPlatforms" | "badgeStyle">, value: string) => void;
   setSocial: (key: keyof Socials, value: string) => void;
   addCustomSocial: (name: string, url: string, color: string) => void;
   removeCustomSocial: (id: string) => void;
@@ -184,6 +202,13 @@ export interface FormActions {
   setLanyard: (update: Partial<FormState["lanyard"]>) => void;
   setTechProficiency: (techId: string, level: number) => void;
   setIncludeWatermark: (val: boolean) => void;
+  setBadgeStyle: (style: 'for-the-badge' | 'flat' | 'flat-square' | 'plastic' | 'social') => void;
+  toggleFutureTech: (id: string) => void;
+  setSpotify: (update: Partial<FormState["spotify"]>) => void;
+  setTimeline: (update: Partial<FormState["timeline"]>) => void;
+  addTimelineItem: (date: string, title: string, description: string) => void;
+  removeTimelineItem: (id: string) => void;
+  setDevPlatforms: (update: Partial<FormState["devPlatforms"]>) => void;
   reset: () => void;
 }
 
@@ -275,6 +300,24 @@ const defaultState: FormState = {
   },
   techProficiencies: {},
   includeWatermark: true,
+  badgeStyle: "for-the-badge",
+  futureTech: [],
+  spotify: {
+    show: false,
+    trackName: "",
+    artistName: "",
+    spotifyUrl: "",
+  },
+  timeline: {
+    show: false,
+    items: [],
+  },
+  devPlatforms: {
+    show: false,
+    leetcode: "",
+    stackoverflow: "",
+    chess: "",
+  },
 };
 
 export const useFormStore = create<FormState & FormActions>((set) => ({
@@ -342,5 +385,32 @@ export const useFormStore = create<FormState & FormActions>((set) => ({
     techProficiencies: { ...s.techProficiencies, [techId]: level }
   })),
   setIncludeWatermark: (val) => set({ includeWatermark: val }),
+  setBadgeStyle: (style) => set({ badgeStyle: style }),
+  toggleFutureTech: (id) =>
+    set((s) => ({
+      futureTech: s.futureTech.includes(id)
+        ? s.futureTech.filter((t) => t !== id)
+        : [...s.futureTech, id],
+    })),
+  setSpotify: (update) => set((s) => ({ spotify: { ...s.spotify, ...update } })),
+  setTimeline: (update) => set((s) => ({ timeline: { ...s.timeline, ...update } })),
+  addTimelineItem: (date, title, description) =>
+    set((s) => ({
+      timeline: {
+        ...s.timeline,
+        items: [
+          ...s.timeline.items,
+          { id: Date.now().toString(), date, title, description },
+        ],
+      },
+    })),
+  removeTimelineItem: (id) =>
+    set((s) => ({
+      timeline: {
+        ...s.timeline,
+        items: s.timeline.items.filter((item) => item.id !== id),
+      },
+    })),
+  setDevPlatforms: (update) => set((s) => ({ devPlatforms: { ...s.devPlatforms, ...update } })),
   reset: () => set(defaultState),
 }));
