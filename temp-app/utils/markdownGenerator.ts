@@ -43,12 +43,16 @@ function buildSocialBadges(f: FormState, usePresetColor: boolean, presetBadgeCol
     const handle = f.socials[s.id as keyof typeof f.socials];
     if (!handle) return [];
     const url = s.urlPrefix + handle;
-    const color = usePresetColor && presetBadgeColor ? presetBadgeColor : s.color;
+    const color = f.customTheme.enabled 
+      ? f.customTheme.badgeColor.replace("#", "") 
+      : (usePresetColor && presetBadgeColor ? presetBadgeColor : s.color);
     return [`<a href="${url}" target="_blank"><img src="https://img.shields.io/badge/${encode(s.name)}-${color}?style=for-the-badge&logo=${s.logo}&logoColor=white" alt="${s.name}" /></a>`];
   });
 
   const customSocialBadges = (f.customSocials || []).map((cs) => {
-    const color = usePresetColor && presetBadgeColor ? presetBadgeColor : cs.color;
+    const color = f.customTheme.enabled 
+      ? f.customTheme.badgeColor.replace("#", "") 
+      : (usePresetColor && presetBadgeColor ? presetBadgeColor : cs.color);
     return `<a href="${cs.url}" target="_blank"><img src="https://img.shields.io/badge/${encode(cs.name)}-${color}?style=for-the-badge" alt="${cs.name}" /></a>`;
   });
 
@@ -60,12 +64,16 @@ function buildTechBadges(f: FormState, usePresetColor: boolean, presetBadgeColor
   const badges = f.techStack.flatMap((id) => {
     const t = techStack.find((item) => item.id === id);
     if (!t) return [];
-    const color = usePresetColor && presetBadgeColor ? presetBadgeColor : t.color;
+    const color = f.customTheme.enabled 
+      ? f.customTheme.badgeColor.replace("#", "") 
+      : (usePresetColor && presetBadgeColor ? presetBadgeColor : t.color);
     return [`<img src="https://img.shields.io/badge/${encode(t.name)}-${color}.svg?style=for-the-badge&logo=${t.slug}&logoColor=white" alt="${t.name}"/>`];
   });
 
   const customBadges = (f.customTech || []).map((ct) => {
-    const color = usePresetColor && presetBadgeColor ? presetBadgeColor : ct.color;
+    const color = f.customTheme.enabled 
+      ? f.customTheme.badgeColor.replace("#", "") 
+      : (usePresetColor && presetBadgeColor ? presetBadgeColor : ct.color);
     return `<img src="https://img.shields.io/badge/${encode(ct.name)}-${color}.svg?style=for-the-badge" alt="${ct.name}"/>`;
   });
 
@@ -78,7 +86,10 @@ function buildDonationBadges(f: FormState): string {
       const handle = f.donations[d.id as keyof typeof f.donations];
       if (!handle) return [];
       const url = d.urlPrefix + handle;
-      return [`<a href="${url}"><img src="https://img.shields.io/badge/${encode(d.name)}-${d.color}?style=for-the-badge&logo=${d.logo}&logoColor=white" alt="${d.name}"/></a>`];
+      const color = f.customTheme.enabled 
+        ? f.customTheme.badgeColor.replace("#", "") 
+        : d.color;
+      return [`<a href="${url}"><img src="https://img.shields.io/badge/${encode(d.name)}-${color}?style=for-the-badge&logo=${d.logo}&logoColor=white" alt="${d.name}"/></a>`];
     })
     .join("\n");
 }
@@ -100,7 +111,6 @@ function toActivityGraphTheme(theme: string): string {
   if (theme === "tokyonight") return "tokyo-night";
   if (theme === "dracula") return "dracula";
   if (theme === "github_dark" || theme === "github_dark_dimmed") return "github-dark";
-  // If the theme is already a valid activity-graph theme (like 'react', 'vue', etc.), return it as is
   const validGraphThemes = [
     "default", "react", "react-dark", "github", "github-compact", 
     "xcode", "rogue", "merko", "vue", "tokyo-night", "high-contrast"
@@ -111,22 +121,44 @@ function toActivityGraphTheme(theme: string): string {
   return "github-compact";
 }
 
+function buildWakaTime(f: FormState, useCustom: boolean, defaultTheme: string): string {
+  if (!f.wakatime.show || !f.wakatime.username) return "";
+  const query = useCustom
+    ? `bg_color=${f.customTheme.cardBg.replace("#", "")}&title_color=${f.customTheme.cardTitle.replace("#", "")}&text_color=${f.customTheme.cardText.replace("#", "")}&icon_color=${f.customTheme.cardIcon.replace("#", "")}`
+    : `theme=${f.wakatime.theme || defaultTheme}`;
+  return `<img src="https://github-readme-stats.vercel.app/api/wakatime?username=${f.wakatime.username}&${query}&hide_border=false" alt="WakaTime Stats" />`;
+}
+
+function buildBlogFeed(f: FormState): string {
+  if (!f.blogFeed.show) return "";
+  return `\n### 📝 Latest Blog Posts\n<!-- START_SECTION:blogs -->\n<!-- END_SECTION:blogs -->\n`;
+}
+
 export function generateMarkdown(f: FormState, baseUrl: string = "https://profile-crest.vercel.app"): string {
   // 1. Resolve Theme Presets values
   const activePreset = themePresets.find((p) => p.id === f.themePreset) || themePresets[0];
   const usePresetColor = f.themePreset !== "default";
+  const useCustom = f.customTheme.enabled;
 
-  const badgeColor = usePresetColor ? activePreset.badgeColor : null;
+  const badgeColor = useCustom 
+    ? f.customTheme.badgeColor.replace("#", "")
+    : (usePresetColor ? activePreset.badgeColor : null);
+
   const statsTheme = usePresetColor ? activePreset.statsTheme : f.stats.statsTheme;
   const languagesTheme = usePresetColor ? activePreset.statsTheme : f.stats.languagesTheme;
   const streakTheme = usePresetColor ? activePreset.statsTheme : f.stats.streakTheme;
   const trophyTheme = usePresetColor ? activePreset.trophyTheme : f.stats.trophyTheme;
-  const visitorColor = usePresetColor ? activePreset.visitorColor : f.visitorCounter.color;
-  // Activity graph theme: use preset's statsTheme (mapped) when a preset is active,
-  // otherwise use the user's own activityGraphTheme selection from step 4.
+  const visitorColor = useCustom
+    ? f.customTheme.badgeColor.replace("#", "")
+    : (usePresetColor ? activePreset.visitorColor : f.visitorCounter.color);
+
   const activityGraphTheme = toActivityGraphTheme(
     usePresetColor ? activePreset.statsTheme : f.stats.activityGraphTheme
   );
+
+  const customColorQuery = useCustom
+    ? `bg_color=${f.customTheme.cardBg.replace("#", "")}&title_color=${f.customTheme.cardTitle.replace("#", "")}&text_color=${f.customTheme.cardText.replace("#", "")}&icon_color=${f.customTheme.cardIcon.replace("#", "")}`
+    : null;
 
   // Render layouts
   if (f.layoutPreset === "bento") {
@@ -146,91 +178,106 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
 
     // Bento Table Grid
     md += `\n<table border="0" width="100%">\n`;
-    md += `  <tr>\n`;
-    md += `    <td width="55%" valign="top">\n`;
-    md += `      <h3>🔭 Profile summary</h3>\n`;
-    const summary = buildAboutHtml(f);
-    md += summary || "I am a passionate software developer.";
-    md += `\n    </td>\n`;
-    md += `    <td width="45%" valign="top" align="center">\n`;
-    md += `      <h3>📊 Contributions & stats</h3>\n`;
-    if (f.username && f.stats.showStats) {
-      md += `      <img src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" width="100%" />\n`;
-    } else {
-      md += `      Stats card disabled or username missing\n`;
-    }
-    md += `    </td>\n`;
-    md += `  </tr>\n`;
-
-    // Row 2: Tech stack badges
-    const techBadges = buildTechBadges(f, usePresetColor, badgeColor);
-    if (techBadges) {
-      md += `  <tr>\n`;
-      md += `    <td colspan="2" valign="top">\n`;
-      md += `      <h3>💻 Languages and Tools</h3>\n`;
-      md += `      <p align="left">\n${techBadges}\n</p>\n`;
-      md += `    </td>\n`;
-      md += `  </tr>\n`;
-    }
-
-    // Row 3: Streaks and achievements
-    if (f.username && (f.stats.showTrophies || f.stats.showStreak)) {
-      md += `  <tr>\n`;
-      md += `    <td colspan="2" valign="top">\n`;
-      md += `      <h3>🏆 Achievements & streaks</h3>\n`;
-      md += `      <p align="left">\n`;
-      if (f.stats.showTrophies) {
-        md += `        <a href="https://github.com/ryo-ma/github-profile-trophy"><img src="https://github-profile-trophy.vercel.app/?username=${f.username}&theme=${trophyTheme}" alt="Trophies" /></a><br/><br/>\n`;
+    
+    const order = f.bentoOrder || ["about_stats", "tech", "achievements", "showcase", "connect_support"];
+    order.forEach((blockId) => {
+      if (blockId === "about_stats") {
+        md += `  <tr>\n`;
+        md += `    <td width="55%" valign="top">\n`;
+        md += `      <h3>🔭 Profile summary</h3>\n`;
+        const summary = buildAboutHtml(f);
+        md += summary || "I am a passionate software developer.";
+        md += `\n    </td>\n`;
+        md += `    <td width="45%" valign="top" align="center">\n`;
+        md += `      <h3>📊 Contributions & stats</h3>\n`;
+        if (f.username && f.stats.showStats) {
+          const query = useCustom && customColorQuery ? customColorQuery : `theme=${statsTheme}`;
+          md += `      <img src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" width="100%" />\n`;
+        } else {
+          md += `      Stats card disabled or username missing\n`;
+        }
+        md += `    </td>\n`;
+        md += `  </tr>\n`;
+      } else if (blockId === "tech") {
+        const techBadges = buildTechBadges(f, usePresetColor || useCustom, badgeColor);
+        if (techBadges) {
+          md += `  <tr>\n`;
+          md += `    <td colspan="2" valign="top">\n`;
+          md += `      <h3>💻 Languages and Tools</h3>\n`;
+          md += `      <p align="left">\n${techBadges}\n</p>\n`;
+          md += `    </td>\n`;
+          md += `  </tr>\n`;
+        }
+      } else if (blockId === "achievements") {
+        if (f.username && (f.stats.showTrophies || f.stats.showStreak || f.wakatime.show)) {
+          md += `  <tr>\n`;
+          md += `    <td colspan="2" valign="top">\n`;
+          md += `      <h3>🏆 Achievements, streaks & velocity</h3>\n`;
+          md += `      <p align="left">\n`;
+          if (f.stats.showTrophies) {
+            md += `        <a href="https://github.com/ryo-ma/github-profile-trophy"><img src="https://github-profile-trophy.vercel.app/?username=${f.username}&theme=${trophyTheme}" alt="Trophies" /></a><br/><br/>\n`;
+          }
+          if (f.stats.showStreak) {
+            const query = useCustom && customColorQuery ? customColorQuery : `theme=${streakTheme}`;
+            md += `        <img src="https://streak-stats.demolab.com/?user=${f.username}&${query}&hide_border=false&cache_seconds=86400" alt="Streak Stats" /><br/><br/>\n`;
+          }
+          if (f.wakatime.show && f.wakatime.username) {
+            md += `        ${buildWakaTime(f, useCustom, statsTheme)}<br/><br/>\n`;
+          }
+          md += `      </p>\n`;
+          md += `    </td>\n`;
+          md += `  </tr>\n`;
+        }
+      } else if (blockId === "showcase") {
+        const showcaseStr = buildShowcaseContent(f);
+        if (showcaseStr) {
+          md += `  <tr>\n`;
+          md += `    <td colspan="2" valign="top">\n`;
+          md += `      <h3>📁 Featured Projects</h3>\n`;
+          md += showcaseStr;
+          md += `    </td>\n`;
+          md += `  </tr>\n`;
+        }
+      } else if (blockId === "connect_support") {
+        const socialBadges = buildSocialBadges(f, usePresetColor || useCustom, badgeColor);
+        const donationBadges = buildDonationBadges(f);
+        if (socialBadges || donationBadges) {
+          md += `  <tr>\n`;
+          md += `    <td width="50%" valign="top">\n`;
+          if (socialBadges) {
+            md += `      <h3>🌐 Connect with me</h3>\n`;
+            md += `      <p align="left">\n${socialBadges}\n</p>\n`;
+          }
+          md += `    </td>\n`;
+          md += `    <td width="50%" valign="top">\n`;
+          if (donationBadges) {
+            md += `      <h3>💰 Support my work</h3>\n`;
+            md += `      <p align="left">\n${donationBadges}\n</p>\n`;
+          }
+          md += `    </td>\n`;
+          md += `  </tr>\n`;
+        }
       }
-      if (f.stats.showStreak) {
-        md += `        <img src="https://streak-stats.demolab.com/?user=${f.username}&theme=${streakTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" />\n`;
-      }
-      md += `      </p>\n`;
-      md += `    </td>\n`;
-      md += `  </tr>\n`;
-    }
-
-    // Row 4: Highlighted Projects
-    const showcaseStr = buildShowcaseContent(f);
-    if (showcaseStr) {
-      md += `  <tr>\n`;
-      md += `    <td colspan="2" valign="top">\n`;
-      md += `      <h3>📁 Featured Projects</h3>\n`;
-      md += showcaseStr;
-      md += `    </td>\n`;
-      md += `  </tr>\n`;
-    }
-
-    // Row 5: Socials & Support
-    const socialBadges = buildSocialBadges(f, usePresetColor, badgeColor);
-    const donationBadges = buildDonationBadges(f);
-    if (socialBadges || donationBadges) {
-      md += `  <tr>\n`;
-      md += `    <td width="50%" valign="top">\n`;
-      if (socialBadges) {
-        md += `      <h3>🌐 Connect with me</h3>\n`;
-        md += `      <p align="left">\n${socialBadges}\n</p>\n`;
-      }
-      md += `    </td>\n`;
-      md += `    <td width="50%" valign="top">\n`;
-      if (donationBadges) {
-        md += `      <h3>💰 Support my work</h3>\n`;
-        md += `      <p align="left">\n${donationBadges}\n</p>\n`;
-      }
-      md += `    </td>\n`;
-      md += `  </tr>\n`;
-    }
+    });
     md += `</table>\n\n`;
 
     // Activity graph
     if (f.stats.showActivityGraph && f.username) {
       md += `\n### 📈 Weekly Contribution Graph\n\n`;
-      md += `[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&theme=${activityGraphTheme})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
+      const query = useCustom
+        ? `bg_color=${f.customTheme.cardBg.replace("#", "")}&title_color=${f.customTheme.cardTitle.replace("#", "")}&text_color=${f.customTheme.cardText.replace("#", "")}&line=${f.customTheme.cardIcon.replace("#", "")}&point=${f.customTheme.cardTitle.replace("#", "")}`
+        : `theme=${activityGraphTheme}`;
+      md += `[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&${query})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
+    }
+
+    // Blog RSS Feed
+    if (f.blogFeed.show) {
+      md += buildBlogFeed(f);
     }
 
     // Meme and Quote
     if (f.fun.showQuote) {
-      md += `\n<p align="center"><img src="${baseUrl}/api/quote" alt="Quote" /></p>\n`;
+      md += `\n<p align="center"><img src="${baseUrl}/api/quote?theme=${f.fun.quoteTheme}" alt="Quote" /></p>\n`;
     }
     if (f.fun.showMeme) {
       md += `\n### 😄 Random Dev Meme\n\n<img src="${baseUrl}/api/meme" style="height: 400px;" alt="Random meme"/>\n`;
@@ -265,7 +312,7 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     md += "\n\n";
 
     // Core Technologies
-    const techBadges = buildTechBadges(f, usePresetColor, badgeColor);
+    const techBadges = buildTechBadges(f, usePresetColor || useCustom, badgeColor);
     if (techBadges) {
       md += `## 💻 Core Technologies\n<p align="left">\n${techBadges}\n</p>\n\n`;
     }
@@ -277,21 +324,31 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     }
 
     // Professional Connections
-    const socialBadges = buildSocialBadges(f, usePresetColor, badgeColor);
+    const socialBadges = buildSocialBadges(f, usePresetColor || useCustom, badgeColor);
     if (socialBadges) {
       md += `## 🌐 Professional Profiles\n<p align="left">\n${socialBadges}\n</p>\n\n`;
     }
 
     // GitHub stats summary
-    if (f.username && (f.stats.showStats || f.stats.showStreak || f.stats.showTrophies)) {
+    if (f.username && (f.stats.showStats || f.stats.showStreak || f.stats.showTrophies || f.wakatime.show)) {
       md += `## 📈 GitHub Metrics\n<p align="left">\n`;
       if (f.stats.showStats) {
-        md += `  <img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/><br/>\n`;
+        const query = useCustom && customColorQuery ? customColorQuery : `theme=${statsTheme}`;
+        md += `  <img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/><br/>\n`;
       }
       if (f.stats.showStreak) {
-        md += `  <img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${streakTheme}&hide_border=false&cache_seconds=86400" alt="Streak Stats" /><br/><br/>\n`;
+        const query = useCustom && customColorQuery ? customColorQuery : `theme=${streakTheme}`;
+        md += `  <img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&${query}&hide_border=false&cache_seconds=86400" alt="Streak Stats" /><br/><br/>\n`;
+      }
+      if (f.wakatime.show && f.wakatime.username) {
+        md += `  ${buildWakaTime(f, useCustom, statsTheme)}<br/><br/>\n`;
       }
       md += `</p>\n`;
+    }
+
+    // Blog RSS Feed
+    if (f.blogFeed.show) {
+      md += buildBlogFeed(f);
     }
 
     // Donations
@@ -332,17 +389,17 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
 
   // Fun: Quote
   if (f.fun.showQuote) {
-    md += `\n<p align="center"><img src="${baseUrl}/api/quote" alt="Quote" /></p>\n`;
+    md += `\n<p align="center"><img src="${baseUrl}/api/quote?theme=${f.fun.quoteTheme}" alt="Quote" /></p>\n`;
   }
 
   // Social connections
-  const socialBadges = buildSocialBadges(f, usePresetColor, badgeColor);
+  const socialBadges = buildSocialBadges(f, usePresetColor || useCustom, badgeColor);
   if (socialBadges) {
     md += `\n<h3 align="left">Connect with me:</h3>\n<p align="left">\n${socialBadges}\n</p>\n`;
   }
 
   // Tech stack
-  const techBadges = buildTechBadges(f, usePresetColor, badgeColor);
+  const techBadges = buildTechBadges(f, usePresetColor || useCustom, badgeColor);
   if (techBadges) {
     md += `\n<h3 align="left">Languages and Tools:</h3>\n<p align="left">\n${techBadges}\n</p>\n`;
   }
@@ -357,20 +414,38 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
   if (f.username && (f.stats.showStats || f.stats.showTopLanguages || f.stats.showStreak)) {
     md += `\n<h3 align="left">GitHub Stats:</h3>\n<p align="left">\n`;
     if (f.stats.showStats) {
-      md += `<img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&theme=${statsTheme}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/>\n`;
+      const query = useCustom && customColorQuery ? customColorQuery : `theme=${statsTheme}`;
+      md += `<img align="center" src="https://github-readme-stats.vercel.app/api?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&cache_seconds=86400" alt="GitHub Stats" /><br/>\n`;
     }
     if (f.stats.showTopLanguages) {
-      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&theme=${languagesTheme}&hide_border=false&include_all_commits=true&count_private=true&layout=compact&cache_seconds=86400" alt="Top Languages" /><br/>\n`;
+      const query = useCustom && customColorQuery ? customColorQuery : `theme=${languagesTheme}`;
+      md += `<img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=${f.username}&${query}&hide_border=false&include_all_commits=true&count_private=true&layout=compact&cache_seconds=86400" alt="Top Languages" /><br/>\n`;
     }
     if (f.stats.showStreak) {
-      md += `<img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&theme=${streakTheme}&hide_border=false&cache_seconds=86400" alt="GitHub Streak" /><br/>\n`;
+      const query = useCustom && customColorQuery ? customColorQuery : `theme=${streakTheme}`;
+      md += `<img align="center" src="https://streak-stats.demolab.com/?user=${f.username}&${query}&hide_border=false&cache_seconds=86400" alt="GitHub Streak" /><br/>\n`;
     }
     md += `</p>\n`;
   }
 
   // Activity Graph
   if (f.stats.showActivityGraph && f.username) {
-    md += `\n[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&theme=${activityGraphTheme})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
+    const query = useCustom
+      ? `bg_color=${f.customTheme.cardBg.replace("#", "")}&title_color=${f.customTheme.cardTitle.replace("#", "")}&text_color=${f.customTheme.cardText.replace("#", "")}&line=${f.customTheme.cardIcon.replace("#", "")}&point=${f.customTheme.cardTitle.replace("#", "")}`
+      : `theme=${activityGraphTheme}`;
+    md += `\n[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=${f.username}&${query})](https://github.com/ashutosh00710/github-readme-activity-graph)\n`;
+  }
+
+  // WakaTime Coding Activity
+  if (f.wakatime.show && f.wakatime.username) {
+    md += `\n<h3 align="left">WakaTime Coding Activity:</h3>\n<p align="left">\n`;
+    md += `  ${buildWakaTime(f, useCustom, statsTheme)}\n`;
+    md += `</p>\n`;
+  }
+
+  // Blog RSS Feed
+  if (f.blogFeed.show) {
+    md += buildBlogFeed(f);
   }
 
   // Meme

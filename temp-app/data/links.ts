@@ -25,6 +25,20 @@ export const socialLinks: SocialItem[] = [
   { id: "codesandbox", name: "CodeSandbox", placeholder: "yourusername", urlPrefix: "https://codesandbox.io/u/", color: "040404", logo: "codesandbox" },
   { id: "dribbble", name: "Dribbble", placeholder: "yourusername", urlPrefix: "https://dribbble.com/", color: "EA4C89", logo: "dribbble" },
   { id: "behance", name: "Behance", placeholder: "yourusername", urlPrefix: "https://www.behance.net/", color: "1769FF", logo: "behance" },
+  { id: "facebook", name: "Facebook", placeholder: "yourusername", urlPrefix: "https://facebook.com/", color: "1877F2", logo: "facebook" },
+  { id: "threads", name: "Threads", placeholder: "yourusername", urlPrefix: "https://threads.net/@", color: "000000", logo: "threads" },
+  { id: "bluesky", name: "Bluesky", placeholder: "yourusername.bsky.social", urlPrefix: "https://bsky.app/profile/", color: "0285FF", logo: "bluesky" },
+  { id: "mastodon", name: "Mastodon", placeholder: "@yourusername@server", urlPrefix: "https://mastodon.social/", color: "6364FF", logo: "mastodon" },
+  { id: "gitlab", name: "GitLab", placeholder: "yourusername", urlPrefix: "https://gitlab.com/", color: "FC6D26", logo: "gitlab" },
+  { id: "bitbucket", name: "Bitbucket", placeholder: "yourusername", urlPrefix: "https://bitbucket.org/", color: "0052CC", logo: "bitbucket" },
+  { id: "jsfiddle", name: "JSFiddle", placeholder: "yourusername", urlPrefix: "https://jsfiddle.net/user/", color: "4679A4", logo: "jsfiddle" },
+  { id: "codeforces", name: "Codeforces", placeholder: "yourhandle", urlPrefix: "https://codeforces.com/profile/", color: "B13030", logo: "codeforces" },
+  { id: "leetcode", name: "LeetCode", placeholder: "yourusername", urlPrefix: "https://leetcode.com/u/", color: "FFA116", logo: "leetcode" },
+  { id: "geeksforgeeks", name: "GeeksforGeeks", placeholder: "yourusername", urlPrefix: "https://auth.geeksforgeeks.org/user/", color: "2F8D46", logo: "geeksforgeeks" },
+  { id: "producthunt", name: "Product Hunt", placeholder: "yourusername", urlPrefix: "https://www.producthunt.com/@", color: "DA552F", logo: "producthunt" },
+  { id: "hackernews", name: "Hacker News", placeholder: "yourusername", urlPrefix: "https://news.ycombinator.com/user?id=", color: "FF6600", logo: "ycombinator" },
+  { id: "whatsapp", name: "WhatsApp (Phone/Link)", placeholder: "yourphonenumber", urlPrefix: "https://wa.me/", color: "25D366", logo: "whatsapp" },
+  { id: "telegram", name: "Telegram", placeholder: "yourusername", urlPrefix: "https://t.me/", color: "26A5E7", logo: "telegram" },
 ];
 
 export interface DonationItem {

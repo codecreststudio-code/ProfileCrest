@@ -48,7 +48,21 @@ function wrapText(text: string, maxChars: number): string[] {
   return lines;
 }
 
-export async function GET() {
+const THEMES: Record<string, { bg: string; border: string; text: string; accent: string; accent2: string; author: string }> = {
+  light: { bg: "#faf9f5", border: "#e6dfd8", text: "#141413", accent: "#cc785c", accent2: "#e8a55a", author: "#cc785c" },
+  dark: { bg: "#1c1c1f", border: "#2d2d30", text: "#f3f4f6", accent: "#cc785c", accent2: "#e8a55a", author: "#cc785c" },
+  radical: { bg: "#143f6b", border: "#1d5693", text: "#feb326", accent: "#f55353", accent2: "#feb326", author: "#f55353" },
+  merko: { bg: "#0a0f0d", border: "#1d2f28", text: "#68b0ab", accent: "#8fc0a9", accent2: "#c8d6af", author: "#8fc0a9" },
+  gruvbox: { bg: "#282828", border: "#3c3836", text: "#ebdbb2", accent: "#fe8019", accent2: "#fabd2f", author: "#fe8019" },
+  tokyonight: { bg: "#1a1b26", border: "#24283b", text: "#a9b1d6", accent: "#7aa2f7", accent2: "#bb9af3", author: "#7aa2f7" },
+  onedark: { bg: "#282c34", border: "#353b45", text: "#abb2bf", accent: "#61afef", accent2: "#c678dd", author: "#61afef" },
+};
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const themeParam = searchParams.get("theme") || "dark";
+  const theme = THEMES[themeParam] || THEMES.dark;
+
   const quote = DEVELOPER_QUOTES[Math.floor(Math.random() * DEVELOPER_QUOTES.length)];
   const lines = wrapText(`"${quote.text}"`, 62);
 
@@ -72,25 +86,25 @@ export async function GET() {
   <svg xmlns="http://www.w3.org/2000/svg" width="600" height="${svgHeight}" viewBox="0 0 600 ${svgHeight}">
     <defs>
       <linearGradient id="crest-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#cc785c" />
-        <stop offset="100%" stop-color="#e8a55a" />
+        <stop offset="0%" stop-color="${theme.accent}" />
+        <stop offset="100%" stop-color="${theme.accent2}" />
       </linearGradient>
     </defs>
-    <rect width="100%" height="100%" rx="12" fill="#faf9f5" stroke="#e6dfd8" stroke-width="1.5"/>
+    <rect width="100%" height="100%" rx="12" fill="${theme.bg}" stroke="${theme.border}" stroke-width="1.5"/>
     <g>
       <!-- Sleek Branding Tag -->
       <text x="570" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="url(#crest-grad)" letter-spacing="1px" text-anchor="end">PROFILECREST</text>
       
       <!-- Big Decorative Quote Mark -->
-      <text x="30" y="52" font-family="Georgia, serif" font-size="32" font-weight="700" fill="#cc785c" opacity="0.35">&#8220;</text>
+      <text x="30" y="52" font-family="Georgia, serif" font-size="32" font-weight="700" fill="${theme.accent}" opacity="0.35">&#8220;</text>
       
       <!-- Multi-line SVG-compatible text representation -->
-      <text x="55" y="${startY}" font-family="Georgia, 'Times New Roman', serif" font-size="15" fill="#141413" font-style="italic">
+      <text x="55" y="${startY}" font-family="Georgia, 'Times New Roman', serif" font-size="15" fill="${theme.text}" font-style="italic">
         ${tspanElements}
       </text>
       
       <!-- Styled Author attribution -->
-      <text x="570" y="${svgHeight - 25}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#cc785c" text-anchor="end">— ${quote.author}</text>
+      <text x="570" y="${svgHeight - 25}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="${theme.author}" text-anchor="end">— ${quote.author}</text>
     </g>
   </svg>
   `;

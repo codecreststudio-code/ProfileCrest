@@ -6,6 +6,8 @@ import Script from "next/script";
 import toast, { Toaster } from "react-hot-toast";
 import { LuGlobe, LuMail, LuHeart, LuUser } from "react-icons/lu";
 import { FaInstagram, FaYoutube } from "react-icons/fa6";
+import { useFormStore } from "@/store/formStore";
+import { locales } from "@/data/locales";
 
 interface Supporter {
   name: string;
@@ -30,6 +32,9 @@ export default function SupportPageClient() {
   const [supporters, setSupporters] = useState<Supporter[] | undefined>(undefined);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { language, setLanguage } = useFormStore();
+  const t = locales[language] || locales.en;
 
   // Fetch supporters database from Next.js serverless backend
   useEffect(() => {
@@ -108,7 +113,7 @@ export default function SupportPageClient() {
             href="/" 
             style={{ textDecoration: "none", color: "var(--text-muted)", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}
           >
-            ← Back to Home
+            {t.navbar.backHome}
           </Link>
         </div>
 
@@ -129,7 +134,18 @@ export default function SupportPageClient() {
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          {/* Spacer */}
+          <select
+            id="nav-lang-select"
+            aria-label="Language Selector"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as "en" | "es" | "hi")}
+            className="form-select"
+            style={{ width: "auto", padding: "6px 10px", fontSize: 13, height: "auto", cursor: "pointer", background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+          >
+            <option value="en">English (EN)</option>
+            <option value="es">Español (ES)</option>
+            <option value="hi">हिन्दी (HI)</option>
+          </select>
         </div>
       </nav>
 
@@ -144,7 +160,7 @@ export default function SupportPageClient() {
           textAlign: "center",
           color: "var(--text-primary)"
         }}>
-          Buy CodeCrest Studio a <span className="gradient-text">Coffee</span>
+          {t.support.title}
         </h1>
       </div>
 
@@ -174,12 +190,12 @@ export default function SupportPageClient() {
               <Image src="/Logo01.webp" alt="ProfileCrest Logo" width={110} height={34} style={{ height: 34, width: "auto", objectFit: "contain" }} />
             </div>
             <p style={{ color: "var(--text-muted)", fontSize: 14 }}>
-              Premium GitHub Profile README Creator Suite by CodeCrest Studio
+              {t.footer.tagline}
             </p>
           </div>
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20, width: "100%", textAlign: "center" }}>
             <p style={{ color: "var(--text-dim)", fontSize: 13 }}>
-              Created with 💜 by <a href="https://codecreststudio.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>CodeCrest Studio</a>. © 2026 ProfileCrest.
+              {t.footer.attribution}
             </p>
           </div>
         </div>
@@ -193,6 +209,9 @@ export default function SupportPageClient() {
 // ==========================================
 
 function AboutCard({ supportersCount }: { supportersCount: number }) {
+  const { language } = useFormStore();
+  const t = locales[language] || locales.en;
+
   return (
     <div className="support-about-card">
       <div style={{ display: "flex", gap: 20, alignItems: "center", marginBottom: 20 }}>
@@ -200,33 +219,33 @@ function AboutCard({ supportersCount }: { supportersCount: number }) {
           👑
         </div>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 700 }}>CodeCrest Studio</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 700 }}>{t.support.aboutTitle}</h2>
           <p style={{ color: "var(--accent)", fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
             <LuHeart style={{ width: 14, height: 14, fill: "var(--accent)" }} /> 
-            {supportersCount} Supporters
+            {supportersCount} {t.support.supportersCount}
           </p>
         </div>
       </div>
 
       <p style={{ color: "var(--text-muted)", fontSize: 15, lineHeight: 1.7, marginBottom: 20 }}>
-        Hey there! 🚀 We are CodeCrest Studio, and we build free, open-source utilities like <strong>ProfileCrest</strong> to empower engineers around the globe.
+        {t.support.aboutText1}
       </p>
       <p style={{ color: "var(--text-muted)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
-        We believe that premium, beautiful portfolios should be accessible to every developer for free. If our README generator saved you time or helped you land a role, consider buying us a coffee! Your support covers server hosting, API integrations, and keeps the project running.
+        {t.support.aboutText2}
       </p>
 
       <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20, display: "flex", flexWrap: "wrap", gap: 16 }}>
         <a href="https://codecreststudio.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
-          <LuGlobe style={{ width: 16, height: 16 }} /> Website
+          <LuGlobe style={{ width: 16, height: 16 }} /> {t.footer.links.website}
         </a>
         <a href="https://www.instagram.com/codecrest__studio/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
-          <FaInstagram style={{ width: 16, height: 16 }} /> Instagram
+          <FaInstagram style={{ width: 16, height: 16 }} /> {t.footer.links.instagram}
         </a>
         <a href="https://www.youtube.com/@CodeCrest_Studio" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
-          <FaYoutube style={{ width: 16, height: 16 }} /> YouTube
+          <FaYoutube style={{ width: 16, height: 16 }} /> {t.footer.links.youtube}
         </a>
         <a href="mailto:codecreststudio@gmail.com" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
-          <LuMail style={{ width: 16, height: 16 }} /> Email
+          <LuMail style={{ width: 16, height: 16 }} /> {t.footer.links.email}
         </a>
       </div>
     </div>
@@ -234,57 +253,64 @@ function AboutCard({ supportersCount }: { supportersCount: number }) {
 }
 
 function SupportersList({ supporters, isLoading }: { supporters: Supporter[] | undefined; isLoading: boolean }) {
+  const { language } = useFormStore();
+  const t = locales[language] || locales.en;
   const isListEmpty = !supporters || supporters.length === 0;
 
   return (
     <div>
       <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
         <LuUser style={{ width: 18, height: 18, color: "var(--accent)" }} />
-        Recent Supporters ({supporters ? supporters.length : 0})
+        {t.support.recentSupporters} ({supporters ? supporters.length : 0})
       </h3>
       
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {isLoading || !supporters ? (
           <div style={{ textAlign: "center", padding: "48px 0", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12 }}>
             <div className="float-animation" style={{ fontSize: 32, marginBottom: 12 }}>☕</div>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--accent)", letterSpacing: "0.05em" }}>Loading live supporters feed…</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--accent)", letterSpacing: "0.05em" }}>{t.support.loadingSupporters}</span>
           </div>
         ) : isListEmpty ? (
           <div style={{ textAlign: "center", padding: "48px 0", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12 }}>
-            <span style={{ fontSize: 14, color: "var(--text-muted)" }}>No supporters yet. Be the first to support us! 🧡</span>
+            <span style={{ fontSize: 14, color: "var(--text-muted)" }}>{t.support.noSupporters}</span>
           </div>
         ) : (
-          supporters.map((sup) => (
-            <div 
-              key={`${sup.name}-${sup.timestamp}`}
-              style={{ 
-                background: "var(--bg-card)", 
-                border: "1px solid var(--border)", 
-                borderRadius: 12, 
-                padding: 20,
-                display: "flex",
-                gap: 16
-              }}
-            >
-              <div className="supporter-coffee-icon">
-                ☕
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 6 }}>
-                  <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>{sup.name}</span>
-                  <span style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>
-                    bought {sup.coffees} coffee{sup.coffees > 1 ? "s" : ""}
+          supporters.map((sup) => {
+            const coffeeText = sup.coffees === 1 
+              ? t.support.boughtCoffee 
+              : t.support.boughtCoffees.replace("{count}", String(sup.coffees));
+            return (
+              <div 
+                key={`${sup.name}-${sup.timestamp}`}
+                style={{ 
+                  background: "var(--bg-card)", 
+                  border: "1px solid var(--border)", 
+                  borderRadius: 12, 
+                  padding: 20,
+                  display: "flex",
+                  gap: 16
+                }}
+              >
+                <div className="supporter-coffee-icon">
+                  ☕
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 6 }}>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>{sup.name}</span>
+                    <span style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>
+                      {coffeeText}
+                    </span>
+                  </div>
+                  <p style={{ color: "var(--text-muted)", fontSize: 13.5, lineHeight: 1.5, margin: "4px 0" }}>
+                    {sup.message}
+                  </p>
+                  <span style={{ fontSize: 12, color: "var(--text-dim)", alignSelf: "flex-end" }}>
+                    {new Date(sup.timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                   </span>
                 </div>
-                <p style={{ color: "var(--text-muted)", fontSize: 13.5, lineHeight: 1.5, margin: "4px 0" }}>
-                  {sup.message}
-                </p>
-                <span style={{ fontSize: 12, color: "var(--text-dim)", alignSelf: "flex-end" }}>
-                  {new Date(sup.timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                </span>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
@@ -297,7 +323,9 @@ interface SupportFormProps {
 }
 
 function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
-  // Grouped state object to resolve prefer-useReducer warning (6 hook counts)
+  const { language } = useFormStore();
+  const t = locales[language] || locales.en;
+
   const [formState, setFormState] = useState({
     currency: "USD",
     coffeeCount: 3,
@@ -420,7 +448,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
   return (
     <>
       <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
-        Buy a Coffee ☕
+        {t.support.formTitle}
       </h2>
 
       <form onSubmit={handleSupportSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -428,7 +456,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
         {/* Currency Selector */}
         <div>
           <label className="form-label" htmlFor="coffee-currency-select">
-            Select Currency
+            {t.support.selectCurrency}
           </label>
           <select
             id="coffee-currency-select"
@@ -448,7 +476,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
 
         {/* Coffees Increments */}
         <div>
-          <span className="form-label">Number of Coffees</span>
+          <span className="form-label">{t.support.numberCoffees}</span>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
             {[1, 3, 5, 10].map((num) => {
               const isSelected = isCustomCount === false && coffeeCount === num;
@@ -479,7 +507,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
         {isCustomCount === true && (
           <div className="animate-fade-in">
             <label className="form-label" htmlFor="coffee-custom-count-input">
-              Enter custom coffee count
+              {t.support.customQtyLabel}
             </label>
             <input
               id="coffee-custom-count-input"
@@ -489,7 +517,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
               value={customValue}
               onChange={(e) => setCustomValue(e.target.value)}
               className="form-input"
-              placeholder="e.g. 6"
+              placeholder={t.support.customQtyPlaceholder}
             />
           </div>
         )}
@@ -505,7 +533,7 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
           alignItems: "center"
         }}>
           <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>
-            Total Support Amount:
+            {t.support.totalAmount}
           </span>
           <span style={{ fontSize: 20, fontWeight: 800, color: "var(--accent)" }}>
             {selectedCurr.symbol}{totalAmount.toLocaleString()} {currency}
@@ -515,14 +543,14 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
         {/* Name */}
         <div>
           <label className="form-label" htmlFor="supporter-name-input">
-            Your Name or Social Handle
+            {t.support.nameLabel}
           </label>
           <input
             id="supporter-name-input"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. @yourhandle or Jane Doe"
+            placeholder={t.support.namePlaceholder}
             className="form-input"
             maxLength={50}
           />
@@ -531,13 +559,13 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
         {/* Message */}
         <div>
           <label className="form-label" htmlFor="supporter-message-input">
-            Say something nice…
+            {t.support.messageLabel}
           </label>
           <textarea
             id="supporter-message-input"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Write an encouraging message…"
+            placeholder={t.support.messagePlaceholder}
             className="form-input"
             style={{ minHeight: 90, resize: "vertical", fontFamily: "inherit" }}
             maxLength={250}
@@ -557,11 +585,11 @@ function SupportForm({ submitSupporter, scriptLoaded }: SupportFormProps) {
             boxShadow: "0 4px 20px var(--accent-glow)"
           }}
         >
-          Support {selectedCurr.symbol}{totalAmount.toLocaleString()}
+          {t.support.submitBtn} {selectedCurr.symbol}{totalAmount.toLocaleString()}
         </button>
 
         <p style={{ textAlign: "center", color: "var(--text-dim)", fontSize: 12 }}>
-          Payments securely processed via Razorpay standard overlay.
+          {t.support.secureNotice}
         </p>
 
       </form>

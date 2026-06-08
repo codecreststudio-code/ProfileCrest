@@ -31,6 +31,20 @@ export interface Socials {
   codesandbox: string;
   dribbble: string;
   behance: string;
+  facebook: string;
+  threads: string;
+  bluesky: string;
+  mastodon: string;
+  gitlab: string;
+  bitbucket: string;
+  jsfiddle: string;
+  codeforces: string;
+  leetcode: string;
+  geeksforgeeks: string;
+  producthunt: string;
+  hackernews: string;
+  whatsapp: string;
+  telegram: string;
 }
 
 export interface Stats {
@@ -105,10 +119,33 @@ export interface FormState {
 
   // Step 7 Fun
   fun: Fun;
+
+  // Advanced Features State
+  customTheme: {
+    enabled: boolean;
+    badgeColor: string;
+    cardBg: string;
+    cardTitle: string;
+    cardText: string;
+    cardIcon: string;
+  };
+  bentoOrder: string[];
+  wakatime: {
+    show: boolean;
+    username: string;
+    theme: string;
+  };
+  blogFeed: {
+    show: boolean;
+    platform: string;
+    username: string;
+    limit: number;
+  };
+  language: "en" | "es" | "hi";
 }
 
 export interface FormActions {
-  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects">, value: string) => void;
+  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects" | "customTheme" | "bentoOrder" | "wakatime" | "blogFeed" | "language">, value: string) => void;
   setSocial: (key: keyof Socials, value: string) => void;
   addCustomSocial: (name: string, url: string, color: string) => void;
   removeCustomSocial: (id: string) => void;
@@ -123,6 +160,11 @@ export interface FormActions {
   setLayoutPreset: (layout: 'classic' | 'bento' | 'resume') => void;
   addShowcaseProject: (name: string, description: string, url: string, techTags: string) => void;
   removeShowcaseProject: (id: string) => void;
+  setCustomTheme: (update: Partial<FormState["customTheme"]>) => void;
+  setBentoOrder: (order: string[]) => void;
+  setWakaTime: (update: Partial<FormState["wakatime"]>) => void;
+  setBlogFeed: (update: Partial<FormState["blogFeed"]>) => void;
+  setLanguage: (lang: "en" | "es" | "hi") => void;
   reset: () => void;
 }
 
@@ -147,6 +189,9 @@ const defaultState: FormState = {
     youtube: "", devto: "", medium: "", hashnode: "",
     stackoverflow: "", codepen: "", kaggle: "", discord: "",
     reddit: "", twitch: "", codesandbox: "", dribbble: "", behance: "",
+    facebook: "", threads: "", bluesky: "", mastodon: "", gitlab: "",
+    bitbucket: "", jsfiddle: "", codeforces: "", leetcode: "", geeksforgeeks: "",
+    producthunt: "", hackernews: "", whatsapp: "", telegram: "",
   },
   customSocials: [],
   techStack: [],
@@ -175,6 +220,27 @@ const defaultState: FormState = {
     showQuote: false,
     quoteTheme: "dark",
   },
+  customTheme: {
+    enabled: false,
+    badgeColor: "cc785c",
+    cardBg: "faf9f5",
+    cardTitle: "cc785c",
+    cardText: "141413",
+    cardIcon: "cc785c",
+  },
+  bentoOrder: ["about_stats", "tech", "achievements", "showcase", "connect_support"],
+  wakatime: {
+    show: false,
+    username: "",
+    theme: "tokyonight",
+  },
+  blogFeed: {
+    show: false,
+    platform: "medium",
+    username: "",
+    limit: 5,
+  },
+  language: "en",
 };
 
 export const useFormStore = create<FormState & FormActions>((set) => ({
@@ -231,5 +297,10 @@ export const useFormStore = create<FormState & FormActions>((set) => ({
     set((s) => ({
       showcaseProjects: s.showcaseProjects.filter((p) => p.id !== id),
     })),
+  setCustomTheme: (update) => set((s) => ({ customTheme: { ...s.customTheme, ...update } })),
+  setBentoOrder: (order) => set({ bentoOrder: order }),
+  setWakaTime: (update) => set((s) => ({ wakatime: { ...s.wakatime, ...update } })),
+  setBlogFeed: (update) => set((s) => ({ blogFeed: { ...s.blogFeed, ...update } })),
+  setLanguage: (lang) => set({ language: lang }),
   reset: () => set(defaultState),
 }));
