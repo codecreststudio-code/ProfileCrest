@@ -212,6 +212,8 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     ? `bg_color=${f.customTheme.cardBg.replace("#", "")}&title_color=${f.customTheme.cardTitle.replace("#", "")}&text_color=${f.customTheme.cardText.replace("#", "")}&icon_color=${f.customTheme.cardIcon.replace("#", "")}`
     : null;
 
+  let finalMd = "";
+
   // Render layouts
   if (f.layoutPreset === "bento") {
     let md = "";
@@ -343,10 +345,8 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += `\n### 😄 Random Dev Meme\n\n<img src="${baseUrl}/api/meme" style="height: 400px;" alt="Random meme"/>\n`;
     }
 
-    return md.trim();
-  }
-
-  if (f.layoutPreset === "resume") {
+    finalMd = md.trim();
+  } else if (f.layoutPreset === "resume") {
     let md = "";
 
     // Name & subtitle
@@ -437,11 +437,10 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
       md += `</p>\n`;
     }
 
-    return md.trim();
-  }
-
-  // CLASSIC VERTICAL LAYOUT (Standard Stack)
-  let md = "";
+    finalMd = md.trim();
+  } else {
+    // CLASSIC VERTICAL LAYOUT (Standard Stack)
+    let md = "";
 
   // Visitor Counter
   if (f.visitorCounter.enabled && f.username) {
@@ -548,5 +547,13 @@ export function generateMarkdown(f: FormState, baseUrl: string = "https://profil
     md += `\n<h3 align="left">Support me:</h3>\n<p align="left">\n${donationBadges}\n</p>\n`;
   }
 
-  return md.trim();
+  finalMd = md.trim();
+  }
+
+  if (f.includeWatermark) {
+    const resolvedBadgeColor = badgeColor || "cc785c";
+    finalMd += `\n\n<br />\n\n<p align="center">\n  <a href="https://profile-crest.vercel.app" target="_blank">\n    <img src="https://img.shields.io/badge/Generated%20with-ProfileCrest-${resolvedBadgeColor}?style=for-the-badge&logo=github&logoColor=white" alt="ProfileCrest" />\n  </a>\n</p>`;
+  }
+
+  return finalMd;
 }

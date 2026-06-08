@@ -1,5 +1,25 @@
 import type { Metadata } from "next";
+import { Inter, Cormorant_Garamond, Fira_Code } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-cormorant",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+const firaCode = Fira_Code({
+  subsets: ["latin"],
+  variable: "--font-fira-code",
+  weight: ["400", "500"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://profile-crest.vercel.app"),
@@ -70,7 +90,9 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body className={`${inter.variable} ${cormorant.variable} ${firaCode.variable}`} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

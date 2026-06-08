@@ -156,10 +156,11 @@ export interface FormState {
     theme: string;
   };
   techProficiencies: Record<string, number>;
+  includeWatermark: boolean;
 }
 
 export interface FormActions {
-  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects" | "customTheme" | "bentoOrder" | "wakatime" | "blogFeed" | "language" | "statsToggles" | "lanyard" | "techProficiencies">, value: string) => void;
+  setField: (key: keyof Omit<FormState, "socials" | "customSocials" | "techStack" | "customTech" | "stats" | "visitorCounter" | "donations" | "fun" | "showcaseProjects" | "customTheme" | "bentoOrder" | "wakatime" | "blogFeed" | "language" | "statsToggles" | "lanyard" | "techProficiencies" | "includeWatermark">, value: string) => void;
   setSocial: (key: keyof Socials, value: string) => void;
   addCustomSocial: (name: string, url: string, color: string) => void;
   removeCustomSocial: (id: string) => void;
@@ -182,6 +183,7 @@ export interface FormActions {
   setStatsToggles: (update: Partial<FormState["statsToggles"]>) => void;
   setLanyard: (update: Partial<FormState["lanyard"]>) => void;
   setTechProficiency: (techId: string, level: number) => void;
+  setIncludeWatermark: (val: boolean) => void;
   reset: () => void;
 }
 
@@ -272,6 +274,7 @@ const defaultState: FormState = {
     theme: "dark",
   },
   techProficiencies: {},
+  includeWatermark: true,
 };
 
 export const useFormStore = create<FormState & FormActions>((set) => ({
@@ -338,5 +341,6 @@ export const useFormStore = create<FormState & FormActions>((set) => ({
   setTechProficiency: (techId, level) => set((s) => ({
     techProficiencies: { ...s.techProficiencies, [techId]: level }
   })),
+  setIncludeWatermark: (val) => set({ includeWatermark: val }),
   reset: () => set(defaultState),
 }));

@@ -82,6 +82,7 @@ export interface LocaleDictionary {
     localhostWarningTitle: string;
     localhostWarningDesc: string;
     emptyPreview: string;
+    watermarkLabel: string;
   };
 }
 
@@ -96,8 +97,8 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       downloadBtn: " Download",
     },
     hero: {
-      titlePrefix: "Best Profile",
-      titleSpan: "Generator",
+      titlePrefix: "GitHub Profile",
+      titleSpan: "README Generator",
       desc: "Create a premium, gorgeous GitHub Profile README with Bento grids, custom tech stacks, trophies, and dynamic synced memes & quotes, all for free!",
       placeholder: "Enter your GitHub username…",
       btn: "Generate README →",
@@ -215,6 +216,7 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       localhostWarningTitle: "⚠️ Local Development Warning:",
       localhostWarningDesc: "You are running locally on localhost. The self-hosted quote and random meme cards generated point to your local URL (http://localhost:3000). GitHub's proxy servers cannot access localhost, so these two images will appear broken on your real GitHub profile README. To fix this: Deploy your ProfileCrest generator repository to Vercel (or any host) first, and copy the final markdown from your deployed website!",
       emptyPreview: "Fill in the form to see your README preview here",
+      watermarkLabel: "Include ProfileCrest watermark backlink (helps other developers discover the tool)",
     },
   },
   es: {
@@ -227,8 +229,8 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       downloadBtn: " Descargar",
     },
     hero: {
-      titlePrefix: "El mejor generador",
-      titleSpan: "de perfiles",
+      titlePrefix: "Generador de README de",
+      titleSpan: "perfil de GitHub",
       desc: "¡Crea un README de perfil de GitHub premium y magnífico con cuadrículas Bento, tecnologías personalizadas, trofeos y memes y citas dinámicas sincronizadas, todo gratis!",
       placeholder: "Ingresa tu usuario de GitHub…",
       btn: "Generar README →",
@@ -346,6 +348,7 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       localhostWarningTitle: "⚠️ Advertencia de desarrollo local:",
       localhostWarningDesc: "Estás ejecutando localmente en localhost. Las tarjetas autohospedadas de citas y memes generadas apuntan a tu URL local (http://localhost:3000). Los servidores proxy de GitHub no pueden acceder a localhost, por lo que estas dos imágenes aparecerán rotas en tu README real. Para solucionarlo: ¡Despliega tu repositorio del generador a Vercel primero y copia el markdown de tu sitio web desplegado!",
       emptyPreview: "Completa el formulario para ver la vista previa de tu README aquí",
+      watermarkLabel: "Incluir enlace de marca de agua de ProfileCrest (ayuda a otros desarrolladores a descubrir la herramienta)",
     },
   },
   hi: {
@@ -358,8 +361,8 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       downloadBtn: " डाउनलोड करें",
     },
     hero: {
-      titlePrefix: "सर्वश्रेष्ठ प्रोफाइल",
-      titleSpan: "जेनरेटर",
+      titlePrefix: "गिटहब प्रोफाइल",
+      titleSpan: "README जेनरेटर",
       desc: "बेंटो ग्रिड, कस्टम टेक स्टैक, ट्राफियां और लाइव सिंक किए गए मीम्स और कोट्स के साथ एक प्रीमियम, भव्य गिटहब प्रोफाइल README बनाएं, सब कुछ बिल्कुल मुफ्त!",
       placeholder: "अपना गिटहब यूजरनेम दर्ज करें…",
       btn: "README जेनरेट करें →",
@@ -477,6 +480,7 @@ export const locales: Record<"en" | "es" | "hi", LocaleDictionary> = {
       localhostWarningTitle: "⚠️ स्थानीय विकास चेतावनी:",
       localhostWarningDesc: "आप लोकलहोस्ट पर स्थानीय रूप से चल रहे हैं। जेनरेट किए गए सेल्फ-होस्टेड कोट और रैंडम मीम कार्ड आपके स्थानीय यूआरएल (http://localhost:3000) की ओर इशारा करते हैं। गिटहब के प्रॉक्सी सर्वर लोकलहोस्ट तक नहीं पहुंच सकते हैं, इसलिए ये दो छवियां आपके वास्तविक गिटहब प्रोफाइल README पर टूटी हुई दिखाई देंगी। इसे ठीक करने के लिए: पहले अपने प्रोफाइलक्रेस्ट जेनरेटर रिपॉजिटरी को वर्सेल (या किसी होस्ट) पर डिप्लॉय करें, और आपकी डिप्लॉय की गई वेबसाइट से अंतिम मार्कडाउन कॉपी करें!",
       emptyPreview: "यहाँ अपना README पूर्वावलोकन देखने के लिए फ़ॉर्म भरें",
+      watermarkLabel: "प्रोफ़ाइलक्रेस्ट वॉटरमार्क बैकलिंक शामिल करें (अन्य डेवलपर्स को टूल खोजने में मदद करता है)",
     },
   },
 };

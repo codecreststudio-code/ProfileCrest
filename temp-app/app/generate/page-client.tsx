@@ -264,7 +264,15 @@ function MarkdownPreviewPanel({
 }: PreviewPanelProps) {
   const { language } = useFormStore();
   const t = locales[language] || locales.en;
-  const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const [isLocalhost, setIsLocalhost] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setIsLocalhost(
+        window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+      );
+    });
+  }, []);
 
   return (
     <div className="preview-panel">
@@ -1254,6 +1262,7 @@ function DonationsStep({ store }: StepProps) {
 
 function WorkflowsStep({ store }: StepProps) {
   const { language } = store;
+  const t = locales[language] || locales.en;
 
   const moveItem = (index: number, direction: "up" | "down") => {
     const newOrder = [...store.bentoOrder];
@@ -1686,6 +1695,26 @@ jobs:
             </select>
           </div>
         )}
+      </div>
+
+      {/* ProfileCrest Branding */}
+      <div className="section-card" style={{ marginTop: 16 }}>
+        <p className="section-title">🛡️ ProfileCrest Attribution</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0" }}>
+          <div style={{ paddingRight: 12 }}>
+            <p style={{ fontWeight: 500, fontSize: 14 }}>Include Watermark Backlink</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 1.4 }}>{t.generator.watermarkLabel}</p>
+          </div>
+          <label className="toggle-switch" style={{ flexShrink: 0 }}>
+            <input
+              type="checkbox"
+              aria-label="Toggle Watermark Backlink"
+              checked={store.includeWatermark}
+              onChange={(e) => store.setIncludeWatermark(e.target.checked)}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
       </div>
 
       {/* Social Share Buttons */}
