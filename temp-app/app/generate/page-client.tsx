@@ -67,7 +67,13 @@ function GeneratePageContent() {
   useEffect(() => {
     const u = searchParams.get("u");
     if (u && !storeUsername) {
-      setField("username", u);
+      // Validate GitHub username structure to prevent reflected XSS via script elements
+      const githubUsernameRegex = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
+      if (githubUsernameRegex.test(u)) {
+        setField("username", u);
+      } else {
+        toast.error("Blocked invalid GitHub username from URL parameter.");
+      }
     }
   }, [searchParams, storeUsername, setField]);
 

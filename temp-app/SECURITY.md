@@ -27,15 +27,16 @@ Here is a summary of the security-first safeguards configured in this project:
 ### 1. 🌐 Robust SSRF (Server-Side Request Forgery) Prevention
 In [app/api/meme/route.ts](file:///c:/Users/new/Documents/Omer_DLS_Files/Github_profile_generator/temp-app/app/api/meme/route.ts), ProfileCrest interacts with external APIs. To prevent attackers from exploiting our server to probe internal infrastructure or execute local loopback requests:
 * **Protocol Whitelisting:** Only `http:` and `https:` protocols are accepted.
-* **Host Range Blacklisting:** Hostnames resolving to loopbacks (`localhost`, `127.0.0.1`, `0.0.0.0`, `[::1]`) or private subnets (`10.*.*.*`, `172.16-31.*.*`, `192.168.*.*`) are strictly intercepted and rejected before fetch execution.
+* **Host Range Blacklisting:** Hostnames resolving to loopbacks (`localhost`, `127.0.0.1`, `0.0.0.0`, `[::1]`), link-local address subnets (`169.254.*.*` cloud metadata endpoints), zero-address paths (`0.*.*.*`), or private subnets (`10.*.*.*`, `172.16-31.*.*`, `192.168.*.*`) are strictly intercepted and rejected before fetch execution.
 
 ### 2. 🔑 Strict Secrets Management (Zero Hardcoded Secrets)
 * **Environment Isolation:** No API keys, passwords, or credentials may be written in source code.
 * **Strict Ignoring:** All `.env*` configurations are registered inside [.gitignore](file:///c:/Users/new/Documents/Omer_DLS_Files/Github_profile_generator/temp-app/.gitignore) to prevent accidental committing.
 
 ### 3. 🛡️ Input Sanitation & Formatting Safety
+* **GitHub Username URL Sanitization:** In [app/generate/page-client.tsx](file:///c:/Users/new/Documents/Omer_DLS_Files/Github_profile_generator/temp-app/app/generate/page-client.tsx), username pre-filling from the `u` URL parameter is strictly validated using a regex matching official GitHub username patterns (`/^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/`), blocking reflected XSS script payloads.
 * **Shields.io Parameter Encoding:** To prevent URL injection in generated markdown badges, all user-defined badge labels are strictly sanitized and encoded using `encodeURIComponent` in [utils/markdownGenerator.ts](file:///c:/Users/new/Documents/Omer_DLS_Files/Github_profile_generator/temp-app/utils/markdownGenerator.ts).
-* **ReactMarkdown Escape Safeguards:** Interactive outputs inside the client generator render in-app previews through `ReactMarkdown` with rehype raw sanitizers to prevent unsanitized script tags from executing in the browser layout.
+* **ReactMarkdown Escape Safeguards:** Interactive outputs inside the client generator render in-app previews through `ReactMarkdown` with HTML structure styling to prevent unsanitized script tags from executing in the browser layout.
 
 ### 4. ⚡ Accessible Animation Safety (WCAG 2.3.3)
 * **Reduced Motion Override:** A global `@media (prefers-reduced-motion: reduce)` block is integrated in [app/globals.css](file:///c:/Users/new/Documents/Omer_DLS_Files/Github_profile_generator/temp-app/app/globals.css) to disable motion and transitions automatically for users with sensory sensitivities.

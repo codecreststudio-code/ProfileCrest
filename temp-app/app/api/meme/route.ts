@@ -56,12 +56,14 @@ export async function GET() {
         hostname.endsWith(".internal") ||
         hostname.startsWith("10.") ||
         hostname.startsWith("192.168.") ||
+        hostname.startsWith("169.254.") || // Block Link-Local range (SSRF Metadata endpoints)
+        hostname.startsWith("0.") ||       // Block Zero-configuration local routes
         // Check for 172.16.0.0 - 172.31.255.255 range
         /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
         // Check for 127.x.x.x loopbacks
         /^127\./.test(hostname)
       ) {
-        throw new Error("Restricted loopback or private host target blocked (SSRF attempt)");
+        throw new Error("Restricted loopback, private, or link-local host target blocked (SSRF attempt)");
       }
     } catch (urlErr) {
       const errMsg = urlErr instanceof Error ? urlErr.message : String(urlErr);
