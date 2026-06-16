@@ -89,15 +89,6 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1950207410287535"
           crossOrigin="anonymous"
         />
-        <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6GSJZ0WF2N"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-6GSJZ0WF2N');
-</script>
       </head>
       <body className={`${inter.variable} ${cormorant.variable} ${firaCode.variable}`} suppressHydrationWarning>
         {children}
